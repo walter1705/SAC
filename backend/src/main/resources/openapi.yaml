@@ -1,0 +1,1199 @@
+openapi: 3.0.3
+
+info:
+  title: SAC Academic Request Triage System API
+  description: |
+    REST API for the SAC (Sistema de Atención y Clasificación) university project.
+    Centralizes academic requests, classifies and prioritizes them, assigns staff,
+    tracks the full lifecycle, and maintains an auditable history.
+
+    ## Authentication
+    All endpoints (except login) require a valid JWT Bearer token.
+
+    ## Roles
+    | Role           | Permissions                        |
+    |----------------|------------------------------------|
+    | ADMINISTRADOR  | Full access to all resources       |
+    | GESTOR         | Manage requests and assignments    |
+    | CONSULTOR      | Read-only access to requests       |
+
+    ## Request Lifecycle
+    ```
+    REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
+    ```
+    Any other transition returns `400 Bad Request`. Closed requests cannot be modified.
+
+    ## Priority Rules
+
+    | Condition                              | Priority |
+    |----------------------------------------|----------|
+    | CANCELACION close to deadline          | ALTA     |
+    | HOMOLOGACION                           | ALTA     |
+    | REGISTRO during enrollment period      | ALTA     |
+    | CUPOS with no available seats          | ALTA     |
+    | CONSULTA                               | BAJA     |
+    | Default                                | MEDIA    |
+
+  version: 1.0.0
+  contact:
+    name: SAC Development Team
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Requests
+    description: Academic request management (solicitudes)
+  - name: Users
+    description: User management and authentication
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ─────────────────────────────────────────────
+  #  REQUESTS
+  # ─────────────────────────────────────────────
+
+  /api/v1/solicitudes:
+    post:
+      tags: [Requests]
+      summary: Create a new academic request
+      description: |
+        Registers a new academic request in the system with state `REGISTRADA`.
+        **Role required:** `GESTOR`
+      operationId: createRequest
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequestBody'
+            example:
+              tipo: CANCELACION
+              descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+              canalOrigen: SAC
+              idSolicitante: '1094000001'
+      responses:
+        '201':
+          description: Request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+              example:
+                id: 1
+                tipo: CANCELACION
+                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                idSolicitante: '1094000001'
+                prioridad: null
+                justificacionPrioridad: null
+                estado: REGISTRADA
+                observacionCierre: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    get:
+      tags: [Requests]
+      summary: List requests with filters and pagination
+      description: |
+        Returns a paginated list of academic requests. Supports filtering by state,
+        type, priority, and assigned user.
+        **Role required:** `CONSULTOR`
+      operationId: listRequests
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Filter by request state
+          schema:
+            $ref: '#/components/schemas/EstadoSolicitud'
+        - name: tipo
+          in: query
+          required: false
+          description: Filter by request type
+          schema:
+            $ref: '#/components/schemas/TipoSolicitud'
+        - name: prioridad
+          in: query
+          required: false
+          description: Filter by priority level
+          schema:
+            $ref: '#/components/schemas/Prioridad'
+        - name: responsable
+          in: query
+          required: false
+          description: Filter by assigned user ID
+          schema:
+            type: integer
+            format: int64
+            example: 5
+        - name: page
+          in: query
+          required: false
+          description: Page number (zero-based)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+            example: 0
+        - name: size
+          in: query
+          required: false
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+            example: 20
+        - name: sort
+          in: query
+          required: false
+          description: 'Sort field and direction (e.g. fechaHoraRegistro,desc)'
+          schema:
+            type: string
+            example: 'fechaHoraRegistro,desc'
+      responses:
+        '200':
+          description: Paginated list of requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRequestResponse'
+              example:
+                content:
+                  - id: 1
+                    tipo: CANCELACION
+                    descripcion: 'Cancellation of Calculus II'
+                    canalOrigen: SAC
+                    fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                    idSolicitante: '1094000001'
+                    prioridad: ALTA
+                    justificacionPrioridad: 'CANCELACION close to deadline'
+                    estado: CLASIFICADA
+                    observacionCierre: null
+                  - id: 2
+                    tipo: CONSULTA
+                    descripcion: 'Academic schedule inquiry'
+                    canalOrigen: CORREO
+                    fechaHoraRegistro: '2026-03-01T11:00:00Z'
+                    idSolicitante: '1094000002'
+                    prioridad: BAJA
+                    justificacionPrioridad: 'CONSULTA defaults to BAJA'
+                    estado: REGISTRADA
+                    observacionCierre: null
+                page: 0
+                size: 20
+                totalElements: 2
+                totalPages: 1
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}:
+    get:
+      tags: [Requests]
+      summary: Get request detail by ID
+      description: |
+        Returns the full detail of a single academic request.
+        **Role required:** `CONSULTOR`
+      operationId: getRequestById
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Request detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+              example:
+                id: 1
+                tipo: CANCELACION
+                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                idSolicitante: '1094000001'
+                prioridad: ALTA
+                justificacionPrioridad: 'CANCELACION close to deadline'
+                estado: CLASIFICADA
+                observacionCierre: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}/clasificar:
+    patch:
+      tags: [Requests]
+      summary: Classify and prioritize a request
+      description: |
+        Sets the type, priority, and priority justification for a request.
+        Changes the state to `CLASIFICADA`.
+        **Role required:** `GESTOR`
+      operationId: classifyRequest
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassifyRequestBody'
+            example:
+              tipo: CANCELACION
+              prioridad: ALTA
+              justificacionPrioridad: 'CANCELACION close to deadline – requires immediate attention'
+      responses:
+        '200':
+          description: Request classified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+              example:
+                id: 1
+                tipo: CANCELACION
+                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                idSolicitante: '1094000001'
+                prioridad: ALTA
+                justificacionPrioridad: 'CANCELACION close to deadline – requires immediate attention'
+                estado: CLASIFICADA
+                observacionCierre: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}/estado:
+    patch:
+      tags: [Requests]
+      summary: Change request state
+      description: |
+        Transitions a request to a new state following the valid lifecycle:
+        `REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA`.
+        Any invalid transition returns `400 Bad Request`.
+        **Role required:** `GESTOR`
+      operationId: changeRequestState
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeStateBody'
+            example:
+              nuevoEstado: EN_ATENCION
+              observacion: 'Request is now being attended by assigned staff'
+      responses:
+        '200':
+          description: State changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+              example:
+                id: 1
+                tipo: CANCELACION
+                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                idSolicitante: '1094000001'
+                prioridad: ALTA
+                justificacionPrioridad: 'CANCELACION close to deadline'
+                estado: EN_ATENCION
+                observacionCierre: null
+        '400':
+          description: Invalid state transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T12:00:00Z'
+                status: 400
+                error: Bad Request
+                message: 'Invalid state transition from REGISTRADA to EN_ATENCION'
+                path: /api/v1/solicitudes/1/estado
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}/asignar:
+    post:
+      tags: [Requests]
+      summary: Assign a responsible user to a request
+      description: |
+        Assigns a user as the responsible person for a request.
+        The user must be active.
+        **Role required:** `GESTOR`
+      operationId: assignResponsible
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignResponsibleBody'
+            example:
+              usuarioId: 5
+      responses:
+        '201':
+          description: User assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignmentResponse'
+              example:
+                id: 10
+                solicitudId: 1
+                usuarioId: 5
+                fechaAsignacion: '2026-03-01T14:00:00Z'
+                activa: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}/cerrar:
+    patch:
+      tags: [Requests]
+      summary: Close a request
+      description: |
+        Closes a request. The request must be in `ATENDIDA` state.
+        A closing observation is required. Once closed, the request cannot be modified.
+        **Role required:** `GESTOR`
+      operationId: closeRequest
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseRequestBody'
+            example:
+              observacionCierre: 'Request resolved – cancellation approved by academic committee'
+      responses:
+        '200':
+          description: Request closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResponse'
+              example:
+                id: 1
+                tipo: CANCELACION
+                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                canalOrigen: SAC
+                fechaHoraRegistro: '2026-03-01T10:30:00Z'
+                idSolicitante: '1094000001'
+                prioridad: ALTA
+                justificacionPrioridad: 'CANCELACION close to deadline'
+                estado: CERRADA
+                observacionCierre: 'Request resolved – cancellation approved by academic committee'
+        '400':
+          description: Request is not in ATENDIDA state or missing observation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T16:00:00Z'
+                status: 400
+                error: Bad Request
+                message: 'Cannot close request – current state is EN_ATENCION, expected ATENDIDA'
+                path: /api/v1/solicitudes/1/cerrar
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/solicitudes/{id}/historial:
+    get:
+      tags: [Requests]
+      summary: Get full audit history of a request
+      description: |
+        Returns the complete audit trail of all actions performed on a request,
+        ordered chronologically.
+        **Role required:** `CONSULTOR`
+      operationId: getRequestHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: List of history entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryResponse'
+              example:
+                - id: 1
+                  fechaHora: '2026-03-01T10:30:00Z'
+                  accion: 'REGISTRO'
+                  usuarioResponsable: 'jgarcia'
+                  observaciones: 'Request created via SAC portal'
+                - id: 2
+                  fechaHora: '2026-03-01T11:00:00Z'
+                  accion: 'CLASIFICACION'
+                  usuarioResponsable: 'jgarcia'
+                  observaciones: 'Classified as CANCELACION with ALTA priority'
+                - id: 3
+                  fechaHora: '2026-03-01T14:00:00Z'
+                  accion: 'ASIGNACION'
+                  usuarioResponsable: 'mrodriguez'
+                  observaciones: 'Assigned to mrodriguez for handling'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  #  USERS
+  # ─────────────────────────────────────────────
+
+  /api/v1/usuarios/login:
+    post:
+      tags: [Users]
+      summary: Authenticate user and obtain JWT
+      description: |
+        Public endpoint. Validates credentials and returns a JWT Bearer token
+        with the user's role encoded.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+            example:
+              username: 'jgarcia'
+              password: 'S3cur3P@ss!'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                tipo: 'Bearer'
+                username: 'jgarcia'
+                rol: GESTOR
+                expiraEn: 3600
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                timestamp: '2026-03-01T09:00:00Z'
+                status: 401
+                error: Unauthorized
+                message: 'Invalid username or password'
+                path: /api/v1/usuarios/login
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/usuarios:
+    get:
+      tags: [Users]
+      summary: List all active users
+      description: |
+        Returns a list of all active users in the system.
+        **Role required:** `ADMINISTRADOR`
+      operationId: listUsers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of active users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+              example:
+                - id: 1
+                  username: 'admin'
+                  rol: ADMINISTRADOR
+                  activo: true
+                  nombre: 'System Administrator'
+                - id: 5
+                  username: 'jgarcia'
+                  rol: GESTOR
+                  activo: true
+                  nombre: 'Juan García'
+                - id: 8
+                  username: 'mrodriguez'
+                  rol: CONSULTOR
+                  activo: true
+                  nombre: 'María Rodríguez'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Users]
+      summary: Create a new user
+      description: |
+        Creates a new user account in the system.
+        **Role required:** `ADMINISTRADOR`
+      operationId: createUser
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserBody'
+            example:
+              username: 'aperez'
+              password: 'N3wUs3r@2026'
+              rol: GESTOR
+              nombre: 'Ana Pérez'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: 12
+                username: 'aperez'
+                rol: GESTOR
+                activo: true
+                nombre: 'Ana Pérez'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/v1/usuarios/{id}/estado:
+    patch:
+      tags: [Users]
+      summary: Activate or deactivate a user
+      description: |
+        Toggles the active status of a user account.
+        **Role required:** `ADMINISTRADOR`
+      operationId: changeUserStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            format: int64
+            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserStatusBody'
+            example:
+              activo: false
+      responses:
+        '200':
+          description: User status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+              example:
+                id: 5
+                username: 'jgarcia'
+                rol: GESTOR
+                activo: false
+                nombre: 'Juan García'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# ─────────────────────────────────────────────────
+#  COMPONENTS
+# ─────────────────────────────────────────────────
+
+components:
+  # ── Security Schemes ──────────────────────────
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from POST /api/v1/usuarios/login
+
+  # ── Reusable Parameters ───────────────────────
+
+  parameters:
+    RequestId:
+      name: id
+      in: path
+      required: true
+      description: Unique request (solicitud) ID
+      schema:
+        type: integer
+        format: int64
+        example: 1
+
+  # ── Schemas ───────────────────────────────────
+
+  schemas:
+    # ── Enums ─────────────────────────────────
+
+    TipoSolicitud:
+      type: string
+      description: Type of academic request
+      enum:
+        - REGISTRO
+        - HOMOLOGACION
+        - CANCELACION
+        - CUPOS
+        - CONSULTA
+
+    CanalOrigen:
+      type: string
+      description: Origin channel through which the request was received
+      enum:
+        - CSU
+        - CORREO
+        - SAC
+        - TELEFONICO
+        - PRESENCIAL
+
+    Prioridad:
+      type: string
+      description: Priority level assigned to the request
+      enum:
+        - ALTA
+        - MEDIA
+        - BAJA
+
+    EstadoSolicitud:
+      type: string
+      description: |
+        Current state in the request lifecycle.
+        Valid transitions: REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
+      enum:
+        - REGISTRADA
+        - CLASIFICADA
+        - EN_ATENCION
+        - ATENDIDA
+        - CERRADA
+
+    RolUsuario:
+      type: string
+      description: User role determining permissions
+      enum:
+        - ADMINISTRADOR
+        - GESTOR
+        - CONSULTOR
+
+    # ── Request Bodies ────────────────────────
+
+    CreateRequestBody:
+      type: object
+      description: Payload to create a new academic request
+      required:
+        - tipo
+        - descripcion
+        - canalOrigen
+        - idSolicitante
+      properties:
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+        descripcion:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Detailed description of the academic request
+          example: 'Student requests cancellation of Calculus II due to medical reasons'
+        canalOrigen:
+          $ref: '#/components/schemas/CanalOrigen'
+        idSolicitante:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Unique identifier of the requester (student ID, employee ID, etc.)
+          example: '1094000001'
+
+    ClassifyRequestBody:
+      type: object
+      description: Payload to classify and set priority for a request
+      required:
+        - tipo
+        - prioridad
+        - justificacionPrioridad
+      properties:
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+        prioridad:
+          $ref: '#/components/schemas/Prioridad'
+        justificacionPrioridad:
+          type: string
+          minLength: 5
+          maxLength: 500
+          description: Justification for the assigned priority level
+          example: 'CANCELACION close to deadline – requires immediate attention'
+
+    ChangeStateBody:
+      type: object
+      description: Payload to transition a request to a new state
+      required:
+        - nuevoEstado
+      properties:
+        nuevoEstado:
+          $ref: '#/components/schemas/EstadoSolicitud'
+        observacion:
+          type: string
+          maxLength: 1000
+          description: Optional observation about the state change
+          example: 'Request is now being attended by assigned staff'
+
+    AssignResponsibleBody:
+      type: object
+      description: Payload to assign a responsible user to a request
+      required:
+        - usuarioId
+      properties:
+        usuarioId:
+          type: integer
+          format: int64
+          description: ID of the user to assign as responsible
+          example: 5
+
+    CloseRequestBody:
+      type: object
+      description: Payload to close a request (requires closing observation)
+      required:
+        - observacionCierre
+      properties:
+        observacionCierre:
+          type: string
+          minLength: 10
+          maxLength: 2000
+          description: Mandatory observation explaining the resolution
+          example: 'Request resolved – cancellation approved by academic committee'
+
+    LoginBody:
+      type: object
+      description: Credentials for user authentication
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Username
+          example: 'jgarcia'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: User password
+          example: 'S3cur3P@ss!'
+
+    CreateUserBody:
+      type: object
+      description: Payload to create a new user account
+      required:
+        - username
+        - password
+        - rol
+        - nombre
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Unique username
+          example: 'aperez'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: Password (will be hashed server-side)
+          example: 'N3wUs3r@2026'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Full display name
+          example: 'Ana Pérez'
+
+    ChangeUserStatusBody:
+      type: object
+      description: Payload to activate or deactivate a user
+      required:
+        - activo
+      properties:
+        activo:
+          type: boolean
+          description: Set to true to activate, false to deactivate
+          example: false
+
+    # ── Response Schemas ──────────────────────
+
+    RequestResponse:
+      type: object
+      description: Full representation of an academic request
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique request ID
+          example: 1
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+        descripcion:
+          type: string
+          description: Detailed description of the request
+          example: 'Student requests cancellation of Calculus II due to medical reasons'
+        canalOrigen:
+          $ref: '#/components/schemas/CanalOrigen'
+        fechaHoraRegistro:
+          type: string
+          format: date-time
+          description: Timestamp when the request was registered
+          example: '2026-03-01T10:30:00Z'
+        idSolicitante:
+          type: string
+          description: Requester identifier
+          example: '1094000001'
+        prioridad:
+          $ref: '#/components/schemas/Prioridad'
+          nullable: true
+        justificacionPrioridad:
+          type: string
+          nullable: true
+          description: Justification for the priority assignment
+          example: 'CANCELACION close to deadline'
+        estado:
+          $ref: '#/components/schemas/EstadoSolicitud'
+        observacionCierre:
+          type: string
+          nullable: true
+          description: Closing observation (only present when state is CERRADA)
+          example: null
+
+    PaginatedRequestResponse:
+      type: object
+      description: Paginated response wrapper for requests
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestResponse'
+        page:
+          type: integer
+          description: Current page number (zero-based)
+          example: 0
+        size:
+          type: integer
+          description: Number of items per page
+          example: 20
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of matching records
+          example: 42
+        totalPages:
+          type: integer
+          description: Total number of pages
+          example: 3
+
+    HistoryResponse:
+      type: object
+      description: Single audit history entry for a request
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique history entry ID
+          example: 1
+        fechaHora:
+          type: string
+          format: date-time
+          description: Timestamp of the action
+          example: '2026-03-01T10:30:00Z'
+        accion:
+          type: string
+          description: Description of the action performed
+          example: 'REGISTRO'
+        usuarioResponsable:
+          type: string
+          description: Username of the user who performed the action
+          example: 'jgarcia'
+        observaciones:
+          type: string
+          description: Additional observations about the action
+          example: 'Request created via SAC portal'
+
+    AssignmentResponse:
+      type: object
+      description: Representation of a request-to-user assignment
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique assignment ID
+          example: 10
+        solicitudId:
+          type: integer
+          format: int64
+          description: ID of the assigned request
+          example: 1
+        usuarioId:
+          type: integer
+          format: int64
+          description: ID of the assigned user
+          example: 5
+        fechaAsignacion:
+          type: string
+          format: date-time
+          description: Timestamp of the assignment
+          example: '2026-03-01T14:00:00Z'
+        activa:
+          type: boolean
+          description: Whether this assignment is currently active
+          example: true
+
+    UserResponse:
+      type: object
+      description: User information (password is never exposed)
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique user ID
+          example: 5
+        username:
+          type: string
+          description: Username
+          example: 'jgarcia'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+        activo:
+          type: boolean
+          description: Whether the user account is active
+          example: true
+        nombre:
+          type: string
+          description: Full display name
+          example: 'Juan García'
+
+    LoginResponse:
+      type: object
+      description: JWT authentication response
+      properties:
+        token:
+          type: string
+          description: JWT access token
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        tipo:
+          type: string
+          description: Token type
+          example: 'Bearer'
+        username:
+          type: string
+          description: Authenticated username
+          example: 'jgarcia'
+        rol:
+          $ref: '#/components/schemas/RolUsuario'
+        expiraEn:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
+
+    ErrorResponse:
+      type: object
+      description: Standard error response body
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Error occurrence timestamp
+          example: '2026-03-01T12:00:00Z'
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        error:
+          type: string
+          description: HTTP error reason phrase
+          example: 'Bad Request'
+        message:
+          type: string
+          description: Detailed error message
+          example: 'Invalid state transition from REGISTRADA to EN_ATENCION'
+        path:
+          type: string
+          description: Request path that caused the error
+          example: '/api/v1/solicitudes/1/estado'
+
+  # ── Reusable Responses ────────────────────────
+
+  responses:
+    BadRequest:
+      description: Bad Request – Invalid input or business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 400
+            error: Bad Request
+            message: 'Validation failed: descripcion must not be blank'
+            path: /api/v1/solicitudes
+
+    Unauthorized:
+      description: Unauthorized – Missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 401
+            error: Unauthorized
+            message: 'Full authentication is required to access this resource'
+            path: /api/v1/solicitudes
+
+    Forbidden:
+      description: Forbidden – Insufficient role permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 403
+            error: Forbidden
+            message: 'Access denied – CONSULTOR role cannot perform this action'
+            path: /api/v1/solicitudes
+
+    NotFound:
+      description: Not Found – Resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 404
+            error: Not Found
+            message: 'Request with ID 999 not found'
+            path: /api/v1/solicitudes/999
+
+    InternalServerError:
+      description: Internal Server Error – Unexpected failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            timestamp: '2026-03-01T12:00:00Z'
+            status: 500
+            error: Internal Server Error
+            message: 'An unexpected error occurred. Please try again later.'
+            path: /api/v1/solicitudes
