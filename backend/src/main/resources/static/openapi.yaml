@@ -1,72 +1,72 @@
 openapi: 3.0.3
 
 info:
-  title: SAC Academic Request Triage System API
+  title: API del Sistema SAC de Clasificación de Solicitudes Académicas
   description: |
-    REST API for the SAC (Sistema de Atención y Clasificación) university project.
-    Centralizes academic requests, classifies and prioritizes them, assigns staff,
-    tracks the full lifecycle, and maintains an auditable history.
+    API REST para el proyecto universitario SAC (Sistema de Atención y Clasificación).
+    Centraliza las solicitudes académicas, las clasifica y prioriza, asigna personal,
+    rastrea todo el ciclo de vida y mantiene un historial auditable.
 
-    ## Authentication
-    All endpoints (except login) require a valid JWT Bearer token.
+    ## Autenticación
+    Todos los endpoints (excepto login) requieren un token JWT Bearer válido.
 
     ## Roles
-    | Role           | Permissions                        |
+    | Rol            | Permisos                           |
     |----------------|------------------------------------|
-    | ADMINISTRADOR  | Full access to all resources       |
-    | GESTOR         | Manage requests and assignments    |
-    | CONSULTOR      | Read-only access to requests       |
+    | ADMINISTRADOR  | Acceso total a todos los recursos  |
+    | GESTOR         | Gestionar solicitudes y asignaciones |
+    | CONSULTOR      | Acceso de solo lectura a solicitudes |
 
-    ## Request Lifecycle
+    ## Ciclo de Vida de Solicitudes
     ```
     REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
     ```
-    Any other transition returns `400 Bad Request`. Closed requests cannot be modified.
+    Cualquier otra transición retorna `400 Bad Request`. Las solicitudes cerradas no pueden modificarse.
 
-    ## Priority Rules
+    ## Reglas de Prioridad
 
-    | Condition                              | Priority |
-    |----------------------------------------|----------|
-    | CANCELACION close to deadline          | ALTA     |
-    | HOMOLOGACION                           | ALTA     |
-    | REGISTRO during enrollment period      | ALTA     |
-    | CUPOS with no available seats          | ALTA     |
-    | CONSULTA                               | BAJA     |
-    | Default                                | MEDIA    |
+    | Condición                              | Prioridad |
+    |----------------------------------------|-----------|
+    | CANCELACION cerca de fecha límite       | ALTA      |
+    | HOMOLOGACION                           | ALTA      |
+    | REGISTRO durante período de matrícula   | ALTA      |
+    | CUPOS sin cupos disponibles            | ALTA      |
+    | CONSULTA                               | BAJA      |
+    | Por defecto                            | MEDIA     |
 
   version: 1.0.0
   contact:
-    name: SAC Development Team
+    name: Equipo de Desarrollo SAC
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 
 servers:
   - url: http://localhost:8080
-    description: Local development server
+    description: Servidor de desarrollo local
 
 tags:
-  - name: Requests
-    description: Academic request management (solicitudes)
-  - name: Users
-    description: User management and authentication
+  - name: Solicitudes
+    description: Gestión de solicitudes académicas
+  - name: Usuarios
+    description: Gestión de usuarios y autenticación
 
 security:
   - BearerAuth: []
 
 paths:
   # ─────────────────────────────────────────────
-  #  REQUESTS
+  #  SOLICITUDES
   # ─────────────────────────────────────────────
 
   /api/v1/solicitudes:
     post:
-      tags: [Requests]
-      summary: Create a new academic request
+      tags: [Solicitudes]
+      summary: Crear una nueva solicitud académica
       description: |
-        Registers a new academic request in the system with state `REGISTRADA`.
-        **Role required:** `GESTOR`
-      operationId: createRequest
+        Registra una nueva solicitud académica en el sistema con estado `REGISTRADA`.
+        **Rol requerido:** `GESTOR`
+      operationId: crearSolicitud
       security:
         - BearerAuth: []
       requestBody:
@@ -74,23 +74,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRequestBody'
+              $ref: '#/components/schemas/CrearSolicitudBody'
             example:
               tipo: CANCELACION
-              descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+              descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
               canalOrigen: SAC
               idSolicitante: '1094000001'
       responses:
         '201':
-          description: Request created successfully
+          description: Solicitud creada exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestResponse'
+                $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
                 tipo: CANCELACION
-                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
                 idSolicitante: '1094000001'
@@ -99,47 +99,47 @@ paths:
                 estado: REGISTRADA
                 observacionCierre: null
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
     get:
-      tags: [Requests]
-      summary: List requests with filters and pagination
+      tags: [Solicitudes]
+      summary: Listar solicitudes con filtros y paginación
       description: |
-        Returns a paginated list of academic requests. Supports filtering by state,
-        type, priority, and assigned user.
-        **Role required:** `CONSULTOR`
-      operationId: listRequests
+        Retorna una lista paginada de solicitudes académicas. Soporta filtrado por estado,
+        tipo, prioridad y usuario asignado.
+        **Rol requerido:** `CONSULTOR`
+      operationId: listarSolicitudes
       security:
         - BearerAuth: []
       parameters:
         - name: estado
           in: query
           required: false
-          description: Filter by request state
+          description: Filtrar por estado de solicitud
           schema:
             $ref: '#/components/schemas/EstadoSolicitud'
         - name: tipo
           in: query
           required: false
-          description: Filter by request type
+          description: Filtrar por tipo de solicitud
           schema:
             $ref: '#/components/schemas/TipoSolicitud'
         - name: prioridad
           in: query
           required: false
-          description: Filter by priority level
+          description: Filtrar por nivel de prioridad
           schema:
             $ref: '#/components/schemas/Prioridad'
         - name: responsable
           in: query
           required: false
-          description: Filter by assigned user ID
+          description: Filtrar por ID del usuario asignado
           schema:
             type: integer
             format: int64
@@ -147,7 +147,7 @@ paths:
         - name: page
           in: query
           required: false
-          description: Page number (zero-based)
+          description: Número de página (basado en cero)
           schema:
             type: integer
             default: 0
@@ -156,7 +156,7 @@ paths:
         - name: size
           in: query
           required: false
-          description: Number of items per page
+          description: Número de elementos por página
           schema:
             type: integer
             default: 20
@@ -166,184 +166,184 @@ paths:
         - name: sort
           in: query
           required: false
-          description: 'Sort field and direction (e.g. fechaHoraRegistro,desc)'
+          description: 'Campo y dirección de ordenamiento (ej. fechaHoraRegistro,desc)'
           schema:
             type: string
             example: 'fechaHoraRegistro,desc'
       responses:
         '200':
-          description: Paginated list of requests
+          description: Lista paginada de solicitudes
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedRequestResponse'
+                $ref: '#/components/schemas/SolicitudesPaginadasResponse'
               example:
                 content:
                   - id: 1
                     tipo: CANCELACION
-                    descripcion: 'Cancellation of Calculus II'
+                    descripcion: 'Cancelación de Cálculo II'
                     canalOrigen: SAC
                     fechaHoraRegistro: '2026-03-01T10:30:00Z'
                     idSolicitante: '1094000001'
                     prioridad: ALTA
-                    justificacionPrioridad: 'CANCELACION close to deadline'
+                    justificacionPrioridad: 'CANCELACION cerca de fecha límite'
                     estado: CLASIFICADA
                     observacionCierre: null
                   - id: 2
                     tipo: CONSULTA
-                    descripcion: 'Academic schedule inquiry'
+                    descripcion: 'Consulta sobre horario académico'
                     canalOrigen: CORREO
                     fechaHoraRegistro: '2026-03-01T11:00:00Z'
                     idSolicitante: '1094000002'
                     prioridad: BAJA
-                    justificacionPrioridad: 'CONSULTA defaults to BAJA'
+                    justificacionPrioridad: 'CONSULTA por defecto es BAJA'
                     estado: REGISTRADA
                     observacionCierre: null
-                page: 0
-                size: 20
-                totalElements: 2
-                totalPages: 1
+                pagina: 0
+                tamaño: 20
+                totalElementos: 2
+                totalPaginas: 1
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}:
     get:
-      tags: [Requests]
-      summary: Get request detail by ID
+      tags: [Solicitudes]
+      summary: Obtener detalle de solicitud por ID
       description: |
-        Returns the full detail of a single academic request.
-        **Role required:** `CONSULTOR`
-      operationId: getRequestById
+        Retorna el detalle completo de una solicitud académica.
+        **Rol requerido:** `CONSULTOR`
+      operationId: obtenerSolicitudPorId
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       responses:
         '200':
-          description: Request detail
+          description: Detalle de la solicitud
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestResponse'
+                $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
                 tipo: CANCELACION
-                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
                 idSolicitante: '1094000001'
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION close to deadline'
+                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
                 estado: CLASIFICADA
                 observacionCierre: null
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}/clasificar:
     patch:
-      tags: [Requests]
-      summary: Classify and prioritize a request
+      tags: [Solicitudes]
+      summary: Clasificar y priorizar una solicitud
       description: |
-        Sets the type, priority, and priority justification for a request.
-        Changes the state to `CLASIFICADA`.
-        **Role required:** `GESTOR`
-      operationId: classifyRequest
+        Establece el tipo, prioridad y justificación de prioridad para una solicitud.
+        Cambia el estado a `CLASIFICADA`.
+        **Rol requerido:** `GESTOR`
+      operationId: clasificarSolicitud
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ClassifyRequestBody'
+              $ref: '#/components/schemas/ClasificarSolicitudBody'
             example:
               tipo: CANCELACION
               prioridad: ALTA
-              justificacionPrioridad: 'CANCELACION close to deadline – requires immediate attention'
+              justificacionPrioridad: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
       responses:
         '200':
-          description: Request classified successfully
+          description: Solicitud clasificada exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestResponse'
+                $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
                 tipo: CANCELACION
-                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
                 idSolicitante: '1094000001'
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION close to deadline – requires immediate attention'
+                justificacionPrioridad: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
                 estado: CLASIFICADA
                 observacionCierre: null
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}/estado:
     patch:
-      tags: [Requests]
-      summary: Change request state
+      tags: [Solicitudes]
+      summary: Cambiar estado de solicitud
       description: |
-        Transitions a request to a new state following the valid lifecycle:
+        Transiciona una solicitud a un nuevo estado siguiendo el ciclo de vida válido:
         `REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA`.
-        Any invalid transition returns `400 Bad Request`.
-        **Role required:** `GESTOR`
-      operationId: changeRequestState
+        Cualquier transición inválida retorna `400 Bad Request`.
+        **Rol requerido:** `GESTOR`
+      operationId: cambiarEstadoSolicitud
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangeStateBody'
+              $ref: '#/components/schemas/CambiarEstadoBody'
             example:
               nuevoEstado: EN_ATENCION
-              observacion: 'Request is now being attended by assigned staff'
+              observacion: 'La solicitud está siendo atendida por el personal asignado'
       responses:
         '200':
-          description: State changed successfully
+          description: Estado cambiado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestResponse'
+                $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
                 tipo: CANCELACION
-                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
                 idSolicitante: '1094000001'
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION close to deadline'
+                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
                 estado: EN_ATENCION
                 observacionCierre: null
         '400':
-          description: Invalid state transition
+          description: Transición de estado inválida
           content:
             application/json:
               schema:
@@ -351,46 +351,46 @@ paths:
               example:
                 timestamp: '2026-03-01T12:00:00Z'
                 status: 400
-                error: Bad Request
-                message: 'Invalid state transition from REGISTRADA to EN_ATENCION'
+                error: Solicitud Incorrecta
+                message: 'Transición de estado inválida de REGISTRADA a EN_ATENCION'
                 path: /api/v1/solicitudes/1/estado
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}/asignar:
     post:
-      tags: [Requests]
-      summary: Assign a responsible user to a request
+      tags: [Solicitudes]
+      summary: Asignar un usuario responsable a una solicitud
       description: |
-        Assigns a user as the responsible person for a request.
-        The user must be active.
-        **Role required:** `GESTOR`
-      operationId: assignResponsible
+        Asigna un usuario como la persona responsable de una solicitud.
+        El usuario debe estar activo.
+        **Rol requerido:** `GESTOR`
+      operationId: asignarResponsable
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignResponsibleBody'
+              $ref: '#/components/schemas/AsignarResponsableBody'
             example:
               usuarioId: 5
       responses:
         '201':
-          description: User assigned successfully
+          description: Usuario asignado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AssignmentResponse'
+                $ref: '#/components/schemas/AsignacionResponse'
               example:
                 id: 10
                 solicitudId: 1
@@ -398,57 +398,57 @@ paths:
                 fechaAsignacion: '2026-03-01T14:00:00Z'
                 activa: true
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}/cerrar:
     patch:
-      tags: [Requests]
-      summary: Close a request
+      tags: [Solicitudes]
+      summary: Cerrar una solicitud
       description: |
-        Closes a request. The request must be in `ATENDIDA` state.
-        A closing observation is required. Once closed, the request cannot be modified.
-        **Role required:** `GESTOR`
-      operationId: closeRequest
+        Cierra una solicitud. La solicitud debe estar en estado `ATENDIDA`.
+        Se requiere una observación de cierre. Una vez cerrada, la solicitud no puede modificarse.
+        **Rol requerido:** `GESTOR`
+      operationId: cerrarSolicitud
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CloseRequestBody'
+              $ref: '#/components/schemas/CerrarSolicitudBody'
             example:
-              observacionCierre: 'Request resolved – cancellation approved by academic committee'
+              observacionCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
       responses:
         '200':
-          description: Request closed successfully
+          description: Solicitud cerrada exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestResponse'
+                $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
                 tipo: CANCELACION
-                descripcion: 'Student requests cancellation of Calculus II due to medical reasons'
+                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
                 idSolicitante: '1094000001'
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION close to deadline'
+                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
                 estado: CERRADA
-                observacionCierre: 'Request resolved – cancellation approved by academic committee'
+                observacionCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
         '400':
-          description: Request is not in ATENDIDA state or missing observation
+          description: La solicitud no está en estado ATENDIDA o falta observación
           content:
             application/json:
               schema:
@@ -456,94 +456,94 @@ paths:
               example:
                 timestamp: '2026-03-01T16:00:00Z'
                 status: 400
-                error: Bad Request
-                message: 'Cannot close request – current state is EN_ATENCION, expected ATENDIDA'
+                error: Solicitud Incorrecta
+                message: 'No se puede cerrar la solicitud – estado actual es EN_ATENCION, se esperaba ATENDIDA'
                 path: /api/v1/solicitudes/1/cerrar
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/solicitudes/{id}/historial:
     get:
-      tags: [Requests]
-      summary: Get full audit history of a request
+      tags: [Solicitudes]
+      summary: Obtener historial completo de auditoría de una solicitud
       description: |
-        Returns the complete audit trail of all actions performed on a request,
-        ordered chronologically.
-        **Role required:** `CONSULTOR`
-      operationId: getRequestHistory
+        Retorna el rastro de auditoría completo de todas las acciones realizadas en una solicitud,
+        ordenado cronológicamente.
+        **Rol requerido:** `CONSULTOR`
+      operationId: obtenerHistorialSolicitud
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdSolicitud'
       responses:
         '200':
-          description: List of history entries
+          description: Lista de entradas del historial
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/HistoryResponse'
+                  $ref: '#/components/schemas/HistorialResponse'
               example:
                 - id: 1
                   fechaHora: '2026-03-01T10:30:00Z'
                   accion: 'REGISTRO'
                   usuarioResponsable: 'jgarcia'
-                  observaciones: 'Request created via SAC portal'
+                  observaciones: 'Solicitud creada vía portal SAC'
                 - id: 2
                   fechaHora: '2026-03-01T11:00:00Z'
                   accion: 'CLASIFICACION'
                   usuarioResponsable: 'jgarcia'
-                  observaciones: 'Classified as CANCELACION with ALTA priority'
+                  observaciones: 'Clasificada como CANCELACION con prioridad ALTA'
                 - id: 3
                   fechaHora: '2026-03-01T14:00:00Z'
                   accion: 'ASIGNACION'
                   usuarioResponsable: 'mrodriguez'
-                  observaciones: 'Assigned to mrodriguez for handling'
+                  observaciones: 'Asignada a mrodriguez para gestión'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   # ─────────────────────────────────────────────
-  #  USERS
+  #  USUARIOS
   # ─────────────────────────────────────────────
 
   /api/v1/usuarios/login:
     post:
-      tags: [Users]
-      summary: Authenticate user and obtain JWT
+      tags: [Usuarios]
+      summary: Autenticar usuario y obtener JWT
       description: |
-        Public endpoint. Validates credentials and returns a JWT Bearer token
-        with the user's role encoded.
-      operationId: login
+        Endpoint público. Valida credenciales y retorna un token JWT Bearer
+        con el rol del usuario codificado.
+      operationId: iniciarSesion
       security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginBody'
+              $ref: '#/components/schemas/IniciarSesionBody'
             example:
               username: 'jgarcia'
               password: 'S3cur3P@ss!'
       responses:
         '200':
-          description: Authentication successful
+          description: Autenticación exitosa
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
+                $ref: '#/components/schemas/IniciarSesionResponse'
               example:
                 token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
                 tipo: 'Bearer'
@@ -551,9 +551,9 @@ paths:
                 rol: GESTOR
                 expiraEn: 3600
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          description: Invalid credentials
+          description: Credenciales inválidas
           content:
             application/json:
               schema:
@@ -561,37 +561,37 @@ paths:
               example:
                 timestamp: '2026-03-01T09:00:00Z'
                 status: 401
-                error: Unauthorized
-                message: 'Invalid username or password'
+                error: No Autorizado
+                message: 'Nombre de usuario o contraseña inválidos'
                 path: /api/v1/usuarios/login
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/usuarios:
     get:
-      tags: [Users]
-      summary: List all active users
+      tags: [Usuarios]
+      summary: Listar todos los usuarios activos
       description: |
-        Returns a list of all active users in the system.
-        **Role required:** `ADMINISTRADOR`
-      operationId: listUsers
+        Retorna una lista de todos los usuarios activos del sistema.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: listarUsuarios
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: List of active users
+          description: Lista de usuarios activos
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserResponse'
+                  $ref: '#/components/schemas/UsuarioResponse'
               example:
                 - id: 1
                   username: 'admin'
                   rol: ADMINISTRADOR
                   activo: true
-                  nombre: 'System Administrator'
+                  nombre: 'Administrador del Sistema'
                 - id: 5
                   username: 'jgarcia'
                   rol: GESTOR
@@ -603,19 +603,19 @@ paths:
                   activo: true
                   nombre: 'María Rodríguez'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
     post:
-      tags: [Users]
-      summary: Create a new user
+      tags: [Usuarios]
+      summary: Crear un nuevo usuario
       description: |
-        Creates a new user account in the system.
-        **Role required:** `ADMINISTRADOR`
-      operationId: createUser
+        Crea una nueva cuenta de usuario en el sistema.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: crearUsuario
       security:
         - BearerAuth: []
       requestBody:
@@ -623,7 +623,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateUserBody'
+              $ref: '#/components/schemas/CrearUsuarioBody'
             example:
               username: 'aperez'
               password: 'N3wUs3r@2026'
@@ -631,11 +631,11 @@ paths:
               nombre: 'Ana Pérez'
       responses:
         '201':
-          description: User created successfully
+          description: Usuario creado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UsuarioResponse'
               example:
                 id: 12
                 username: 'aperez'
@@ -643,29 +643,29 @@ paths:
                 activo: true
                 nombre: 'Ana Pérez'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
   /api/v1/usuarios/{id}/estado:
     patch:
-      tags: [Users]
-      summary: Activate or deactivate a user
+      tags: [Usuarios]
+      summary: Activar o desactivar un usuario
       description: |
-        Toggles the active status of a user account.
-        **Role required:** `ADMINISTRADOR`
-      operationId: changeUserStatus
+        Cambia el estado activo de una cuenta de usuario.
+        **Rol requerido:** `ADMINISTRADOR`
+      operationId: cambiarEstadoUsuario
       security:
         - BearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: User ID
+          description: ID del usuario
           schema:
             type: integer
             format: int64
@@ -675,16 +675,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChangeUserStatusBody'
+              $ref: '#/components/schemas/CambiarEstadoUsuarioBody'
             example:
               activo: false
       responses:
         '200':
-          description: User status updated successfully
+          description: Estado del usuario actualizado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserResponse'
+                $ref: '#/components/schemas/UsuarioResponse'
               example:
                 id: 5
                 username: 'jgarcia'
@@ -692,51 +692,51 @@ paths:
                 activo: false
                 nombre: 'Juan García'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
-          $ref: '#/components/responses/Unauthorized'
+          $ref: '#/components/responses/NoAutorizado'
         '403':
-          $ref: '#/components/responses/Forbidden'
+          $ref: '#/components/responses/Prohibido'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NoEncontrado'
         '500':
-          $ref: '#/components/responses/InternalServerError'
+          $ref: '#/components/responses/ErrorInterno'
 
 # ─────────────────────────────────────────────────
-#  COMPONENTS
+#  COMPONENTES
 # ─────────────────────────────────────────────────
 
 components:
-  # ── Security Schemes ──────────────────────────
+  # ── Esquemas de Seguridad ─────────────────────
 
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token obtained from POST /api/v1/usuarios/login
+      description: Token JWT obtenido de POST /api/v1/usuarios/login
 
-  # ── Reusable Parameters ───────────────────────
+  # ── Parámetros Reutilizables ──────────────────
 
   parameters:
-    RequestId:
+    IdSolicitud:
       name: id
       in: path
       required: true
-      description: Unique request (solicitud) ID
+      description: ID único de solicitud
       schema:
         type: integer
         format: int64
         example: 1
 
-  # ── Schemas ───────────────────────────────────
+  # ── Esquemas ──────────────────────────────────
 
   schemas:
     # ── Enums ─────────────────────────────────
 
     TipoSolicitud:
       type: string
-      description: Type of academic request
+      description: Tipo de solicitud académica
       enum:
         - REGISTRO
         - HOMOLOGACION
@@ -746,7 +746,7 @@ components:
 
     CanalOrigen:
       type: string
-      description: Origin channel through which the request was received
+      description: Canal de origen por el cual se recibió la solicitud
       enum:
         - CSU
         - CORREO
@@ -756,7 +756,7 @@ components:
 
     Prioridad:
       type: string
-      description: Priority level assigned to the request
+      description: Nivel de prioridad asignado a la solicitud
       enum:
         - ALTA
         - MEDIA
@@ -765,8 +765,8 @@ components:
     EstadoSolicitud:
       type: string
       description: |
-        Current state in the request lifecycle.
-        Valid transitions: REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
+        Estado actual en el ciclo de vida de la solicitud.
+        Transiciones válidas: REGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA
       enum:
         - REGISTRADA
         - CLASIFICADA
@@ -776,17 +776,17 @@ components:
 
     RolUsuario:
       type: string
-      description: User role determining permissions
+      description: Rol de usuario que determina los permisos
       enum:
         - ADMINISTRADOR
         - GESTOR
         - CONSULTOR
 
-    # ── Request Bodies ────────────────────────
+    # ── Cuerpos de Solicitud ──────────────────
 
-    CreateRequestBody:
+    CrearSolicitudBody:
       type: object
-      description: Payload to create a new academic request
+      description: Payload para crear una nueva solicitud académica
       required:
         - tipo
         - descripcion
@@ -799,20 +799,20 @@ components:
           type: string
           minLength: 10
           maxLength: 2000
-          description: Detailed description of the academic request
-          example: 'Student requests cancellation of Calculus II due to medical reasons'
+          description: Descripción detallada de la solicitud académica
+          example: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
         canalOrigen:
           $ref: '#/components/schemas/CanalOrigen'
         idSolicitante:
           type: string
           minLength: 1
           maxLength: 50
-          description: Unique identifier of the requester (student ID, employee ID, etc.)
+          description: Identificador único del solicitante (ID estudiante, ID empleado, etc.)
           example: '1094000001'
 
-    ClassifyRequestBody:
+    ClasificarSolicitudBody:
       type: object
-      description: Payload to classify and set priority for a request
+      description: Payload para clasificar y establecer prioridad de una solicitud
       required:
         - tipo
         - prioridad
@@ -826,12 +826,12 @@ components:
           type: string
           minLength: 5
           maxLength: 500
-          description: Justification for the assigned priority level
-          example: 'CANCELACION close to deadline – requires immediate attention'
+          description: Justificación para el nivel de prioridad asignado
+          example: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
 
-    ChangeStateBody:
+    CambiarEstadoBody:
       type: object
-      description: Payload to transition a request to a new state
+      description: Payload para transicionar una solicitud a un nuevo estado
       required:
         - nuevoEstado
       properties:
@@ -840,24 +840,24 @@ components:
         observacion:
           type: string
           maxLength: 1000
-          description: Optional observation about the state change
-          example: 'Request is now being attended by assigned staff'
+          description: Observación opcional sobre el cambio de estado
+          example: 'La solicitud está siendo atendida por el personal asignado'
 
-    AssignResponsibleBody:
+    AsignarResponsableBody:
       type: object
-      description: Payload to assign a responsible user to a request
+      description: Payload para asignar un usuario responsable a una solicitud
       required:
         - usuarioId
       properties:
         usuarioId:
           type: integer
           format: int64
-          description: ID of the user to assign as responsible
+          description: ID del usuario a asignar como responsable
           example: 5
 
-    CloseRequestBody:
+    CerrarSolicitudBody:
       type: object
-      description: Payload to close a request (requires closing observation)
+      description: Payload para cerrar una solicitud (requiere observación de cierre)
       required:
         - observacionCierre
       properties:
@@ -865,12 +865,12 @@ components:
           type: string
           minLength: 10
           maxLength: 2000
-          description: Mandatory observation explaining the resolution
-          example: 'Request resolved – cancellation approved by academic committee'
+          description: Observación obligatoria explicando la resolución
+          example: 'Solicitud resuelta – cancelación aprobada por el comité académico'
 
-    LoginBody:
+    IniciarSesionBody:
       type: object
-      description: Credentials for user authentication
+      description: Credenciales para autenticación de usuario
       required:
         - username
         - password
@@ -879,19 +879,19 @@ components:
           type: string
           minLength: 3
           maxLength: 50
-          description: Username
+          description: Nombre de usuario
           example: 'jgarcia'
         password:
           type: string
           minLength: 8
           maxLength: 100
           format: password
-          description: User password
+          description: Contraseña del usuario
           example: 'S3cur3P@ss!'
 
-    CreateUserBody:
+    CrearUsuarioBody:
       type: object
-      description: Payload to create a new user account
+      description: Payload para crear una nueva cuenta de usuario
       required:
         - username
         - password
@@ -902,14 +902,14 @@ components:
           type: string
           minLength: 3
           maxLength: 50
-          description: Unique username
+          description: Nombre de usuario único
           example: 'aperez'
         password:
           type: string
           minLength: 8
           maxLength: 100
           format: password
-          description: Password (will be hashed server-side)
+          description: Contraseña (será encriptada del lado del servidor)
           example: 'N3wUs3r@2026'
         rol:
           $ref: '#/components/schemas/RolUsuario'
@@ -917,47 +917,47 @@ components:
           type: string
           minLength: 2
           maxLength: 100
-          description: Full display name
+          description: Nombre completo para mostrar
           example: 'Ana Pérez'
 
-    ChangeUserStatusBody:
+    CambiarEstadoUsuarioBody:
       type: object
-      description: Payload to activate or deactivate a user
+      description: Payload para activar o desactivar un usuario
       required:
         - activo
       properties:
         activo:
           type: boolean
-          description: Set to true to activate, false to deactivate
+          description: true para activar, false para desactivar
           example: false
 
-    # ── Response Schemas ──────────────────────
+    # ── Esquemas de Respuesta ─────────────────
 
-    RequestResponse:
+    SolicitudResponse:
       type: object
-      description: Full representation of an academic request
+      description: Representación completa de una solicitud académica
       properties:
         id:
           type: integer
           format: int64
-          description: Unique request ID
+          description: ID único de la solicitud
           example: 1
         tipo:
           $ref: '#/components/schemas/TipoSolicitud'
         descripcion:
           type: string
-          description: Detailed description of the request
-          example: 'Student requests cancellation of Calculus II due to medical reasons'
+          description: Descripción detallada de la solicitud
+          example: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
         canalOrigen:
           $ref: '#/components/schemas/CanalOrigen'
         fechaHoraRegistro:
           type: string
           format: date-time
-          description: Timestamp when the request was registered
+          description: Timestamp cuando fue registrada la solicitud
           example: '2026-03-01T10:30:00Z'
         idSolicitante:
           type: string
-          description: Requester identifier
+          description: Identificador del solicitante
           example: '1094000001'
         prioridad:
           $ref: '#/components/schemas/Prioridad'
@@ -965,176 +965,176 @@ components:
         justificacionPrioridad:
           type: string
           nullable: true
-          description: Justification for the priority assignment
-          example: 'CANCELACION close to deadline'
+          description: Justificación para la asignación de prioridad
+          example: 'CANCELACION cerca de fecha límite'
         estado:
           $ref: '#/components/schemas/EstadoSolicitud'
         observacionCierre:
           type: string
           nullable: true
-          description: Closing observation (only present when state is CERRADA)
+          description: Observación de cierre (solo presente cuando estado es CERRADA)
           example: null
 
-    PaginatedRequestResponse:
+    SolicitudesPaginadasResponse:
       type: object
-      description: Paginated response wrapper for requests
+      description: Wrapper de respuesta paginada para solicitudes
       properties:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/RequestResponse'
-        page:
+            $ref: '#/components/schemas/SolicitudResponse'
+        pagina:
           type: integer
-          description: Current page number (zero-based)
+          description: Número de página actual (basado en cero)
           example: 0
-        size:
+        tamaño:
           type: integer
-          description: Number of items per page
+          description: Número de elementos por página
           example: 20
-        totalElements:
+        totalElementos:
           type: integer
           format: int64
-          description: Total number of matching records
+          description: Número total de registros que coinciden
           example: 42
-        totalPages:
+        totalPaginas:
           type: integer
-          description: Total number of pages
+          description: Número total de páginas
           example: 3
 
-    HistoryResponse:
+    HistorialResponse:
       type: object
-      description: Single audit history entry for a request
+      description: Entrada única del historial de auditoría para una solicitud
       properties:
         id:
           type: integer
           format: int64
-          description: Unique history entry ID
+          description: ID único de la entrada del historial
           example: 1
         fechaHora:
           type: string
           format: date-time
-          description: Timestamp of the action
+          description: Timestamp de la acción
           example: '2026-03-01T10:30:00Z'
         accion:
           type: string
-          description: Description of the action performed
+          description: Descripción de la acción realizada
           example: 'REGISTRO'
         usuarioResponsable:
           type: string
-          description: Username of the user who performed the action
+          description: Nombre de usuario que realizó la acción
           example: 'jgarcia'
         observaciones:
           type: string
-          description: Additional observations about the action
-          example: 'Request created via SAC portal'
+          description: Observaciones adicionales sobre la acción
+          example: 'Solicitud creada vía portal SAC'
 
-    AssignmentResponse:
+    AsignacionResponse:
       type: object
-      description: Representation of a request-to-user assignment
+      description: Representación de una asignación solicitud-a-usuario
       properties:
         id:
           type: integer
           format: int64
-          description: Unique assignment ID
+          description: ID único de la asignación
           example: 10
         solicitudId:
           type: integer
           format: int64
-          description: ID of the assigned request
+          description: ID de la solicitud asignada
           example: 1
         usuarioId:
           type: integer
           format: int64
-          description: ID of the assigned user
+          description: ID del usuario asignado
           example: 5
         fechaAsignacion:
           type: string
           format: date-time
-          description: Timestamp of the assignment
+          description: Timestamp de la asignación
           example: '2026-03-01T14:00:00Z'
         activa:
           type: boolean
-          description: Whether this assignment is currently active
+          description: Si esta asignación está actualmente activa
           example: true
 
-    UserResponse:
+    UsuarioResponse:
       type: object
-      description: User information (password is never exposed)
+      description: Información del usuario (la contraseña nunca se expone)
       properties:
         id:
           type: integer
           format: int64
-          description: Unique user ID
+          description: ID único del usuario
           example: 5
         username:
           type: string
-          description: Username
+          description: Nombre de usuario
           example: 'jgarcia'
         rol:
           $ref: '#/components/schemas/RolUsuario'
         activo:
           type: boolean
-          description: Whether the user account is active
+          description: Si la cuenta del usuario está activa
           example: true
         nombre:
           type: string
-          description: Full display name
+          description: Nombre completo para mostrar
           example: 'Juan García'
 
-    LoginResponse:
+    IniciarSesionResponse:
       type: object
-      description: JWT authentication response
+      description: Respuesta de autenticación JWT
       properties:
         token:
           type: string
-          description: JWT access token
+          description: Token de acceso JWT
           example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
         tipo:
           type: string
-          description: Token type
+          description: Tipo de token
           example: 'Bearer'
         username:
           type: string
-          description: Authenticated username
+          description: Nombre de usuario autenticado
           example: 'jgarcia'
         rol:
           $ref: '#/components/schemas/RolUsuario'
         expiraEn:
           type: integer
-          description: Token expiration time in seconds
+          description: Tiempo de expiración del token en segundos
           example: 3600
 
     ErrorResponse:
       type: object
-      description: Standard error response body
+      description: Cuerpo de respuesta de error estándar
       properties:
         timestamp:
           type: string
           format: date-time
-          description: Error occurrence timestamp
+          description: Timestamp de ocurrencia del error
           example: '2026-03-01T12:00:00Z'
         status:
           type: integer
-          description: HTTP status code
+          description: Código de estado HTTP
           example: 400
         error:
           type: string
-          description: HTTP error reason phrase
-          example: 'Bad Request'
+          description: Frase de razón del error HTTP
+          example: 'Solicitud Incorrecta'
         message:
           type: string
-          description: Detailed error message
-          example: 'Invalid state transition from REGISTRADA to EN_ATENCION'
+          description: Mensaje de error detallado
+          example: 'Transición de estado inválida de REGISTRADA a EN_ATENCION'
         path:
           type: string
-          description: Request path that caused the error
+          description: Ruta de solicitud que causó el error
           example: '/api/v1/solicitudes/1/estado'
 
-  # ── Reusable Responses ────────────────────────
+  # ── Respuestas Reutilizables ──────────────────
 
   responses:
-    BadRequest:
-      description: Bad Request – Invalid input or business rule violation
+    SolicitudIncorrecta:
+      description: Solicitud Incorrecta – Entrada inválida o violación de regla de negocio
       content:
         application/json:
           schema:
@@ -1142,12 +1142,12 @@ components:
           example:
             timestamp: '2026-03-01T12:00:00Z'
             status: 400
-            error: Bad Request
-            message: 'Validation failed: descripcion must not be blank'
+            error: Solicitud Incorrecta
+            message: 'Falla en validación: descripcion no debe estar en blanco'
             path: /api/v1/solicitudes
 
-    Unauthorized:
-      description: Unauthorized – Missing or invalid JWT token
+    NoAutorizado:
+      description: No Autorizado – Token JWT faltante o inválido
       content:
         application/json:
           schema:
@@ -1155,12 +1155,12 @@ components:
           example:
             timestamp: '2026-03-01T12:00:00Z'
             status: 401
-            error: Unauthorized
-            message: 'Full authentication is required to access this resource'
+            error: No Autorizado
+            message: 'Se requiere autenticación completa para acceder a este recurso'
             path: /api/v1/solicitudes
 
-    Forbidden:
-      description: Forbidden – Insufficient role permissions
+    Prohibido:
+      description: Prohibido – Permisos de rol insuficientes
       content:
         application/json:
           schema:
@@ -1168,12 +1168,12 @@ components:
           example:
             timestamp: '2026-03-01T12:00:00Z'
             status: 403
-            error: Forbidden
-            message: 'Access denied – CONSULTOR role cannot perform this action'
+            error: Prohibido
+            message: 'Acceso denegado – rol CONSULTOR no puede realizar esta acción'
             path: /api/v1/solicitudes
 
-    NotFound:
-      description: Not Found – Resource does not exist
+    NoEncontrado:
+      description: No Encontrado – El recurso no existe
       content:
         application/json:
           schema:
@@ -1181,12 +1181,12 @@ components:
           example:
             timestamp: '2026-03-01T12:00:00Z'
             status: 404
-            error: Not Found
-            message: 'Request with ID 999 not found'
+            error: No Encontrado
+            message: 'Solicitud con ID 999 no encontrada'
             path: /api/v1/solicitudes/999
 
-    InternalServerError:
-      description: Internal Server Error – Unexpected failure
+    ErrorInterno:
+      description: Error Interno del Servidor – Falla inesperada
       content:
         application/json:
           schema:
@@ -1194,6 +1194,6 @@ components:
           example:
             timestamp: '2026-03-01T12:00:00Z'
             status: 500
-            error: Internal Server Error
-            message: 'An unexpected error occurred. Please try again later.'
+            error: Error Interno del Servidor
+            message: 'Ocurrió un error inesperado. Por favor intente de nuevo más tarde.'
             path: /api/v1/solicitudes
