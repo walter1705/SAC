@@ -1,0 +1,119 @@
+package com.uniquindio.backend.controller;
+
+import com.uniquindio.backend.model.Usuario;
+import com.uniquindio.backend.model.dto.request.*;
+import com.uniquindio.backend.model.dto.response.*;
+import com.uniquindio.backend.model.enums.*;
+import com.uniquindio.backend.service.SolicitudService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/solicitudes")
+@RequiredArgsConstructor
+public class SolicitudController {
+
+    private final SolicitudService solicitudService;
+
+    @PostMapping
+    public ResponseEntity<SolicitudResponse> crearSolicitud(
+            @Valid @RequestBody CrearSolicitudRequest request,
+            Authentication authentication) {
+        String username = getUsername(authentication);
+        SolicitudResponse response = solicitudService.crearSolicitud(request, username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<SolicitudesPaginadasResponse> listarSolicitudes(
+            @RequestParam(required = false) EstadoSolicitud estado,
+            @RequestParam(required = false) TipoSolicitud tipo,
+            @RequestParam(required = false) Prioridad prioridad,
+            @RequestParam(required = false) Long responsable,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "fechaHoraRegistro,desc") String sort) {
+
+        Pageable pageable = createPageable(page, size, sort);
+        SolicitudesPaginadasResponse response = solicitudService.listarSolicitudes(
+                estado, tipo, prioridad, responsable, pageable);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitudResponse> obtenerSolicitudPorId(@PathVariable Long id) {
+        SolicitudResponse response = solicitudService.obtenerPorId(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/clasificar")
+    public ResponseEntity<SolicitudResponse> clasificarSolicitud(
+            @PathVariable Long id,
+            @Valid @RequestBody ClasificarSolicitudRequest request,
+            Authentication authentication) {
+        String username = getUsername(authentication);
+        SolicitudResponse response = solicitudService.clasificarSolicitud(id, request, username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<SolicitudResponse> cambiarEstadoSolicitud(
+            @PathVariable Long id,
+            @Valid @RequestBody CambiarEstadoRequest request,
+            Authentication authentication) {
+        String username = getUsername(authentication);
+        SolicitudResponse response = solicitudService.cambiarEstado(id, request, username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/asignar")
+    public ResponseEntity<AsignacionResponse> asignarResponsable(
+            @PathVariable Long id,
+            @Valid @RequestBody AsignarResponsableRequest request,
+            Authentication authentication) {
+        String username = getUsername(authentication);
+        AsignacionResponse response = solicitudService.asignarResponsable(id, request, username);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/{id}/cerrar")
+    public ResponseEntity<SolicitudResponse> cerrarSolicitud(
+            @PathVariable Long id,
+            @Valid @RequestBody CerrarSolicitudRequest request,
+            Authentication authentication) {
+        String username = getUsername(authentication);
+        SolicitudResponse response = solicitudService.cerrarSolicitud(id, request, username);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<HistorialResponse>> obtenerHistorial(@PathVariable Long id) {
+        List<HistorialResponse> historial = solicitudService.obtenerHistorial(id);
+        return ResponseEntity.ok(historial);
+    }
+
+    private String getUsername(Authentication authentication) {
+        if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario) {
+            return usuario.getUsername();
+        }
+        return "system";
+    }
+
+    private Pageable createPageable(int page, int size, String sort) {
+        String[] sortParams = sort.split(",");
+        String sortField = sortParams[0];
+        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        return PageRequest.of(page, Math.min(size, 100), Sort.by(direction, sortField));
+    }
+}

@@ -57,10 +57,10 @@ Define states:
 
 🔹 Prioritization (FR-03)
 
-- [ ] Define academic impact criteria
-- [ ] Define priority rules
-- [ ] Document decision logic
-- [ ] Define structure to justify priority
+- [x] Define academic impact criteria
+- [x] Define priority rules
+- [x] Document decision logic
+- [x] Define structure to justify priority
 
 🔹 Architecture Design
 
