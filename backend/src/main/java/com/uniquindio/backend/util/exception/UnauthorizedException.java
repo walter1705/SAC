@@ -1,4 +1,4 @@
-package com.uniquindio.backend.exception;
+package com.uniquindio.backend.util.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

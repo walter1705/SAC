@@ -1,7 +1,5 @@
-package com.uniquindio.backend.config;
+package com.uniquindio.backend.util.config;
 
-import com.uniquindio.backend.security.JwtAuthenticationEntryPoint;
-import com.uniquindio.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +10,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.uniquindio.backend.util.security.JwtAuthenticationEntryPoint;
+import com.uniquindio.backend.util.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity

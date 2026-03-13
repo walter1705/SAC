@@ -1,9 +1,9 @@
 package com.uniquindio.backend.controller;
 
-import com.uniquindio.backend.dto.request.*;
-import com.uniquindio.backend.dto.response.*;
-import com.uniquindio.backend.entity.Usuario;
-import com.uniquindio.backend.enums.*;
+import com.uniquindio.backend.model.Usuario;
+import com.uniquindio.backend.model.dto.request.*;
+import com.uniquindio.backend.model.dto.response.*;
+import com.uniquindio.backend.model.enums.*;
 import com.uniquindio.backend.service.SolicitudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

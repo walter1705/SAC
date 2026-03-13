@@ -1,6 +1,7 @@
-package com.uniquindio.backend.dto.request;
+package com.uniquindio.backend.model.dto.request;
 
-import com.uniquindio.backend.enums.EstadoSolicitud;
+import com.uniquindio.backend.model.enums.EstadoSolicitud;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;

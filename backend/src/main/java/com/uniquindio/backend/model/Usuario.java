@@ -1,6 +1,7 @@
-package com.uniquindio.backend.entity;
+package com.uniquindio.backend.model;
 
-import com.uniquindio.backend.enums.RolUsuario;
+import com.uniquindio.backend.model.enums.RolUsuario;
+
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,6 +1,6 @@
-package com.uniquindio.backend.security;
+package com.uniquindio.backend.util.security;
 
-import com.uniquindio.backend.entity.Usuario;
+import com.uniquindio.backend.model.Usuario;
 import com.uniquindio.backend.repository.UsuarioRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

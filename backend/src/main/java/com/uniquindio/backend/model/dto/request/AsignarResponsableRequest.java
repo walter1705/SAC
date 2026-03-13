@@ -1,4 +1,4 @@
-package com.uniquindio.backend.dto.request;
+package com.uniquindio.backend.model.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;

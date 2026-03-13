@@ -1,10 +1,11 @@
-package com.uniquindio.backend.entity;
+package com.uniquindio.backend.model;
 
-import com.uniquindio.backend.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+
+import com.uniquindio.backend.model.enums.*;
 
 @Entity
 @Table(name = "solicitudes")

@@ -1,6 +1,7 @@
-package com.uniquindio.backend.dto.response;
+package com.uniquindio.backend.model.dto.response;
 
-import com.uniquindio.backend.enums.RolUsuario;
+import com.uniquindio.backend.model.enums.RolUsuario;
+
 import lombok.Builder;
 import lombok.Data;
 

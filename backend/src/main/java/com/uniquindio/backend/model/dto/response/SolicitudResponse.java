@@ -1,10 +1,11 @@
-package com.uniquindio.backend.dto.response;
+package com.uniquindio.backend.model.dto.response;
 
-import com.uniquindio.backend.enums.*;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.Instant;
+
+import com.uniquindio.backend.model.enums.*;
 
 @Data
 @Builder

@@ -1,4 +1,4 @@
-package com.uniquindio.backend.dto.response;
+package com.uniquindio.backend.model.dto.response;
 
 import lombok.Builder;
 import lombok.Data;

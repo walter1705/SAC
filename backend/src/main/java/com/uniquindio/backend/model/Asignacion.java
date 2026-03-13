@@ -1,4 +1,4 @@
-package com.uniquindio.backend.entity;
+package com.uniquindio.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,7 +1,8 @@
-package com.uniquindio.backend.dto.request;
+package com.uniquindio.backend.model.dto.request;
 
-import com.uniquindio.backend.enums.Prioridad;
-import com.uniquindio.backend.enums.TipoSolicitud;
+import com.uniquindio.backend.model.enums.Prioridad;
+import com.uniquindio.backend.model.enums.TipoSolicitud;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

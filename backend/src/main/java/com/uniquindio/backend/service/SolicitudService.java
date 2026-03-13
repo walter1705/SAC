@@ -1,12 +1,13 @@
 package com.uniquindio.backend.service;
 
-import com.uniquindio.backend.dto.request.*;
-import com.uniquindio.backend.dto.response.*;
-import com.uniquindio.backend.entity.*;
-import com.uniquindio.backend.enums.*;
-import com.uniquindio.backend.exception.BadRequestException;
-import com.uniquindio.backend.exception.ResourceNotFoundException;
+import com.uniquindio.backend.model.*;
+import com.uniquindio.backend.model.dto.request.*;
+import com.uniquindio.backend.model.dto.response.*;
+import com.uniquindio.backend.model.enums.*;
 import com.uniquindio.backend.repository.*;
+import com.uniquindio.backend.util.exception.BadRequestException;
+import com.uniquindio.backend.util.exception.ResourceNotFoundException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

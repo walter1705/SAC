@@ -1,4 +1,4 @@
-package com.uniquindio.backend.enums;
+package com.uniquindio.backend.model.enums;
 
 public enum TipoSolicitud {
     REGISTRO,
