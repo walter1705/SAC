@@ -1,189 +1,187 @@
-# MILESTONE 2 – Detailed Scrum
+# HITO 2 – Scrum Detallado
 
-Phase: Backend and Logic (Weeks 6–10)
+Fase: Backend y Logica (Semanas 6–10)
 Stack: Spring Boot + ORM + REST API
-Focus: Implement all functional backend FRs.
+Enfoque: Implementar todos los FR funcionales del backend.
 
-Based on the Academic Triage and Request Management System guide
+Basado en la guia del Sistema de Triaje Academico y Gestion de Solicitudes.
 
-.
+1️⃣ Objetivo del Hito
 
-1️⃣ Milestone Objective
+Construir un backend funcional que:
 
-Build a functional backend that:
+- [ ] Implemente FR-01 → FR-08
+- [ ] Exponga REST API (FR-12)
+- [ ] Incluya autorizacion basica (FR-13)
+- [ ] Sea funcional sin IA (FR-11)
 
-- [ ] Implements FR-01 → FR-08
-- [ ] Exposes REST API (FR-12)
-- [ ] Includes basic authorization (FR-13)
-- [ ] Is functional without AI (FR-11)
+2️⃣ Objetivo del Producto del Hito
 
-2️⃣ Milestone Product Goal
+Backend listo para consumo desde Angular sin refactorizaciones mayores.
 
-Backend ready for Angular consumption without major refactoring.
+3️⃣ Backlog del Producto del Hito 2
+🔹 Configuracion Base
 
-3️⃣ Milestone 2 Product Backlog
-🔹 Base Configuration
+- [ ] Crear proyecto Spring Boot
+- [ ] Configurar base de datos (PostgreSQL/MySQL)
+- [ ] Configurar JPA/Hibernate
+- [ ] Configurar migraciones (Flyway o Liquibase)
+- [ ] Configurar logging
+- [ ] Configurar manejo global de excepciones
 
-- [ ] Create Spring Boot project
-- [ ] Configure database (PostgreSQL/MySQL)
-- [ ] Configure JPA/Hibernate
-- [ ] Configure migrations (Flyway or Liquibase)
-- [ ] Configure logging
-- [ ] Configure global exception handling
+🔹 Implementacion del Dominio
 
-🔹 Domain Implementation
+- [ ] Entidad Solicitud
+- [ ] Entidad Usuario
+- [ ] Entidad HistorialSolicitud
+- [ ] Enum EstadoSolicitud
+- [ ] Enum Prioridad
+- [ ] Relaciones ORM correctas
+- [ ] Restricciones de BD
 
-- [ ] Request entity
-- [ ] User entity
-- [ ] RequestHistory entity
-- [ ] RequestStatus enum
-- [ ] Priority enum
-- [ ] Correct ORM relationships
-- [ ] DB constraints
+🔹 Implementacion de FR
+FR-01 Registro de solicitudes
 
-🔹 FR Implementation
-FR-01 Request registration
+- [ ] Crear endpoint de registro
+- [ ] Validaciones de campos obligatorios
+- [ ] Persistencia correcta
+- [ ] Auditoria inicial
 
-- [ ] Create request endpoint
-- [ ] Required field validations
-- [ ] Correct persistence
-- [ ] Initial audit
+FR-02 Clasificacion
 
-FR-02 Classification
+- [ ] Endpoint para clasificar solicitud
+- [ ] Validar tipo permitido
+- [ ] Registrar historial
 
-- [ ] Classify request endpoint
-- [ ] Validate allowed type
-- [ ] Record history
+FR-03 Priorizacion
 
-FR-03 Prioritization
+- [ ] Implementar motor de reglas
+- [ ] Calcular prioridad automatica
+- [ ] Guardar justificacion
+- [ ] Permitir ajuste manual
 
-- [ ] Implement rules engine
-- [ ] Calculate automatic priority
-- [ ] Save justification
-- [ ] Allow manual adjustment
+FR-04 Ciclo de vida
 
-FR-04 Lifecycle
+- [ ] Implementar maquina de estados
+- [ ] Validar transiciones
+- [ ] Registrar historial por cambio
+- [ ] Evitar estados invalidos
 
-- [ ] Implement state machine
-- [ ] Validate transitions
-- [ ] Record history per change
-- [ ] Prevent invalid states
+FR-05 Asignacion de responsables
 
-FR-05 Assignee assignment
+- [ ] Endpoint para asignar responsable
+- [ ] Validar responsable activo
+- [ ] Registrar historial
 
-- [ ] Assign assignee endpoint
-- [ ] Validate active assignee
-- [ ] Record history
+FR-06 Historial auditable
 
-FR-06 Auditable history
+- [ ] Tabla de historial
+- [ ] Registrar accion
+- [ ] Registrar usuario
+- [ ] Registrar fecha
+- [ ] Registrar observaciones
 
-- [ ] History table
-- [ ] Record action
-- [ ] Record user
-- [ ] Record date
-- [ ] Record observations
+FR-07 Consultas de solicitudes
 
-FR-07 Request queries
+- [ ] Endpoint con filtro por estado
+- [ ] Filtrar por prioridad
+- [ ] Filtrar por tipo
+- [ ] Filtrar por responsable
+- [ ] Paginacion
 
-- [ ] Filter by status endpoint
-- [ ] Filter by priority
-- [ ] Filter by type
-- [ ] Filter by assignee
-- [ ] Pagination
+FR-08 Cierre de solicitudes
 
-FR-08 Request closure
-
-- [ ] Validate previous state
-- [ ] Require observation
-- [ ] Block subsequent editing
+- [ ] Validar estado previo
+- [ ] Exigir observacion
+- [ ] Bloquear edicion posterior
 
 🔹 REST API (FR-12)
 
-- [ ] REST controllers
-- [ ] Request/response DTOs
+- [ ] Controladores REST
+- [ ] DTOs request/response
 - [ ] Bean Validation
-- [ ] Correct HTTP status codes
-- [ ] Standard error handling
-- [ ] Swagger/OpenAPI documentation
+- [ ] Codigos HTTP correctos
+- [ ] Manejo estandar de errores
+- [ ] Documentacion Swagger/OpenAPI
 
-🔹 Basic Security (FR-13)
+🔹 Seguridad Basica (FR-13)
 
-- [ ] Basic or mock JWT authentication
-- [ ] Defined roles
-- [ ] Endpoint restrictions
-- [ ] User audit
+- [ ] Autenticacion JWT basica o mock
+- [ ] Roles definidos
+- [ ] Restricciones de endpoints
+- [ ] Auditoria de usuario
 
-🔹 Optional AI
+🔹 IA Opcional
 
-- [ ] Implement FR-09 or FR-10
-- [ ] Create AI service interface
-- [ ] Fallback without AI (FR-11)
+- [ ] Implementar FR-09 o FR-10
+- [ ] Crear interfaz de servicio IA
+- [ ] Fallback sin IA (FR-11)
 
-🔹 Testing
+🔹 Pruebas
 
-- [ ] Service unit tests
-- [ ] Repository tests
-- [ ] API integration tests
-- [ ] Priority rules tests
-- [ ] State machine tests
+- [ ] Pruebas unitarias de servicios
+- [ ] Pruebas de repositorios
+- [ ] Pruebas de integracion de API
+- [ ] Pruebas de reglas de prioridad
+- [ ] Pruebas de maquina de estados
 
-🔹 Code Quality
+🔹 Calidad de Codigo
 
-- [ ] Weekly code review
+- [ ] Code review semanal
 - [ ] Checkstyle / Sonar
-- [ ] JavaDoc documentation
-- [ ] Backend technical README
+- [ ] Documentacion JavaDoc
+- [ ] README tecnico del backend
 
-4️⃣ Internal Sprint Planning
-Week 6 – Base Setup
+4️⃣ Planificacion Interna de Sprint
+Semana 6 – Configuracion Base
 
-- [ ] Create project
-- [ ] DB + ORM
-- [ ] Main entities
-- [ ] Migrations
+- [ ] Crear proyecto
+- [ ] BD + ORM
+- [ ] Entidades principales
+- [ ] Migraciones
 
-Week 7 – FR-01 to FR-03
+Semana 7 – FR-01 a FR-03
 
-- [ ] Request registration
-- [ ] Classification
-- [ ] Prioritization
+- [ ] Registro de solicitudes
+- [ ] Clasificacion
+- [ ] Priorizacion
 
-Week 8 – FR-04 to FR-06
+Semana 8 – FR-04 a FR-06
 
-- [ ] State machine
-- [ ] Assignee assignment
-- [ ] Auditable history
+- [ ] Maquina de estados
+- [ ] Asignacion de responsables
+- [ ] Historial auditable
 
-Week 9 – FR-07 to FR-08 + Security
+Semana 9 – FR-07 a FR-08 + Seguridad
 
-- [ ] Filter queries
-- [ ] Request closure
-- [ ] Basic roles
+- [ ] Consultas con filtros
+- [ ] Cierre de solicitudes
+- [ ] Roles basicos
 - [ ] Swagger
 
-Week 10 – Testing and Refactoring
+Semana 10 – Pruebas y Refactorizacion
 
-- [ ] Integration tests
-- [ ] Fix bugs
-- [ ] Documentation
-- [ ] Backend demo
+- [ ] Pruebas de integracion
+- [ ] Corregir bugs
+- [ ] Documentacion
+- [ ] Demo de backend
 
-5️⃣ Definition of Done (Milestone 2)
+5️⃣ Definicion de Hecho (Hito 2)
 
-The backend is ready when:
+El backend esta listo cuando:
 
-- [ ] All backend FRs work
-- [ ] API responds without critical errors
-- [ ] States are correctly validated
-- [ ] Auditable history is complete
-- [ ] Tests pass
-- [ ] Basic security is functional
-- [ ] Works without AI
+- [ ] Todos los FR de backend funcionan
+- [ ] La API responde sin errores criticos
+- [ ] Los estados se validan correctamente
+- [ ] El historial auditable es completo
+- [ ] Las pruebas pasan
+- [ ] La seguridad basica funciona
+- [ ] Funciona sin IA
 
-6️⃣ Milestone Deliverables
+6️⃣ Entregables del Hito
 
-- [ ] Functional backend repository
-- [ ] Persistent database
-- [ ] Documented Swagger
-- [ ] Basic tests
-- [ ] Endpoint demos
+- [ ] Repositorio de backend funcional
+- [ ] Base de datos persistente
+- [ ] Swagger documentado
+- [ ] Pruebas basicas
+- [ ] Demos de endpoints

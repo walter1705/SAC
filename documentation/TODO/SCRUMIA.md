@@ -1,130 +1,130 @@
-# Scrum – Additional Requirements (Optional AI)
+# Scrum – Requerimientos Adicionales (IA Opcional)
 
-Based on the project's optional FRs:
+Basado en los FR opcionales del proyecto:
 
-FR-09 AI-generated summaries
+FR-09 Resumenes generados por IA
 
-FR-10 Automatic classification/priority suggestion
+FR-10 Sugerencia automatica de clasificacion/prioridad
 
-FR-11 AI-independent operation
+FR-11 Operacion independiente de IA
 
-These requirements are optional but assessable as added value.
+Estos requerimientos son opcionales, pero evaluables como valor agregado.
 
-1️⃣ Objective
+1️⃣ Objetivo
 
-Add AI assistance without breaking the base system.
+Agregar asistencia con IA sin romper el sistema base.
 
-Mandatory condition:
+Condicion obligatoria:
 
-The system must work completely without AI (FR-11).
+El sistema debe funcionar completamente sin IA (FR-11).
 
-2️⃣ Product Goal
+2️⃣ Objetivo del Producto
 
-Implement AI as a decoupled service that:
+Implementar IA como un servicio desacoplado que:
 
-- [ ] Suggests classification/priority
-- [ ] Generates summaries
-- [ ] Is optional and can be disabled
+- [ ] Sugiera clasificacion/prioridad
+- [ ] Genere resumenes
+- [ ] Sea opcional y pueda deshabilitarse
 
-3️⃣ AI Backlog
+3️⃣ Backlog de IA
 
-🔹 AI Architecture Design
+🔹 Diseno de Arquitectura de IA
 
-- [ ] Define AIService interface
-- [ ] Design adapter for external LLM
-- [ ] Design fallback without AI
-- [ ] Define timeout and retry
-- [ ] Define AI error handling
-- [ ] Define AI feature flag ON/OFF
+- [ ] Definir interfaz AIService
+- [ ] Disenar adapter para LLM externo
+- [ ] Disenar fallback sin IA
+- [ ] Definir timeout y reintentos
+- [ ] Definir manejo de errores de IA
+- [ ] Definir feature flag de IA ON/OFF
 
-🔹 FR-10 Classification/Priority Suggestion
+🔹 FR-10 Sugerencia de Clasificacion/Prioridad
 
 - [ ] Endpoint /ai/suggest-classification
-- [ ] Send request description to LLM
-- [ ] Receive suggested type
-- [ ] Receive suggested priority
-- [ ] Display suggestion in UI
-- [ ] Allow human confirmation
-- [ ] Record suggestion history
+- [ ] Enviar descripcion de solicitud al LLM
+- [ ] Recibir tipo sugerido
+- [ ] Recibir prioridad sugerida
+- [ ] Mostrar sugerencia en UI
+- [ ] Permitir confirmacion humana
+- [ ] Registrar historial de sugerencias
 
-🔹 FR-09 Request Summary
+🔹 FR-09 Resumen de Solicitud
 
 - [ ] Endpoint /ai/summary
-- [ ] Send request history to LLM
-- [ ] Generate text summary
-- [ ] Display summary in UI
-- [ ] Optionally save summary
-- [ ] Validate length and format
+- [ ] Enviar historial de solicitud al LLM
+- [ ] Generar resumen en texto
+- [ ] Mostrar resumen en UI
+- [ ] Guardar resumen opcionalmente
+- [ ] Validar longitud y formato
 
-🔹 FR-11 AI Independence
+🔹 FR-11 Independencia de IA
 
-- [ ] System works without AI API
-- [ ] Graceful fallback handling
-- [ ] "AI not available" message
-- [ ] Tests without AI
-- [ ] Tests with mock AI
+- [ ] Sistema funcional sin API de IA
+- [ ] Manejo graceful de fallback
+- [ ] Mensaje "IA no disponible"
+- [ ] Pruebas sin IA
+- [ ] Pruebas con IA mock
 
-🔹 Security and Costs
+🔹 Seguridad y Costos
 
-- [ ] Sanitize inputs
-- [ ] Limit tokens
-- [ ] Control rate limit
-- [ ] Hide sensitive data
-- [ ] AI usage logging
+- [ ] Sanitizar entradas
+- [ ] Limitar tokens
+- [ ] Controlar rate limit
+- [ ] Ocultar datos sensibles
+- [ ] Logging de uso de IA
 
-🔹 AI UX
+🔹 UX de IA
 
-- [ ] Label suggestions as "AI"
-- [ ] Allow editing suggestions
-- [ ] Show AI confidence
-- [ ] Regenerate summary button
+- [ ] Etiquetar sugerencias como "IA"
+- [ ] Permitir editar sugerencias
+- [ ] Mostrar confianza de IA
+- [ ] Boton para regenerar resumen
 
-🔹 AI Testing
+🔹 Pruebas de IA
 
-- [ ] Mock AI tests
-- [ ] Fallback tests
-- [ ] Prompt security tests
-- [ ] Performance tests
+- [ ] Pruebas con IA mock
+- [ ] Pruebas de fallback
+- [ ] Pruebas de seguridad de prompts
+- [ ] Pruebas de rendimiento
 
-4️⃣ AI Sprint Planning (2 weeks suggested)
+4️⃣ Planificacion de Sprint IA (2 semanas sugeridas)
 
-Week 1 – AI Backend
+Semana 1 – Backend IA
 
-- [ ] Design AI interface
-- [ ] Implement LLM adapter
-- [ ] Suggestion endpoint
-- [ ] Summary endpoint
-- [ ] Mock tests
+- [ ] Disenar interfaz de IA
+- [ ] Implementar adapter LLM
+- [ ] Endpoint de sugerencias
+- [ ] Endpoint de resumen
+- [ ] Pruebas mock
 
-Week 2 – Frontend + Validation
+Semana 2 – Frontend + Validacion
 
-- [ ] Classification suggestion UI
-- [ ] History summary UI
-- [ ] Human confirmation
-- [ ] Fallback without AI
-- [ ] AI demo
+- [ ] UI de sugerencia de clasificacion
+- [ ] UI de resumen de historial
+- [ ] Confirmacion humana
+- [ ] Fallback sin IA
+- [ ] Demo de IA
 
-5️⃣ AI Definition of Done
+5️⃣ Definicion de Hecho para IA
 
-- [ ] AI is decoupled
-- [ ] System works without AI
-- [ ] Suggestions are editable
-- [ ] Summary is functional
-- [ ] Tests pass
-- [ ] Costs are controlled
+- [ ] IA desacoplada
+- [ ] Sistema funcional sin IA
+- [ ] Sugerencias editables
+- [ ] Resumen funcional
+- [ ] Pruebas pasan
+- [ ] Costos controlados
 
-6️⃣ AI Technical Risks
+6️⃣ Riesgos Tecnicos de IA
 
-- [ ] Critical dependency on external API
-- [ ] Sensitive data sent
-- [ ] Unexpected costs
-- [ ] High latency
-- [ ] Incorrect AI responses
+- [ ] Dependencia critica de API externa
+- [ ] Envio de datos sensibles
+- [ ] Costos inesperados
+- [ ] Alta latencia
+- [ ] Respuestas incorrectas de IA
 
-7️⃣ AI Metrics
+7️⃣ Metricas de IA
 
-- [ ] % suggestions accepted by users
-- [ ] AI response time
-- [ ] No. of AI errors
-- [ ] Cost per request
-- [ ] Total AI usage
+- [ ] % de sugerencias aceptadas por usuarios
+- [ ] Tiempo de respuesta de IA
+- [ ] No. de errores de IA
+- [ ] Costo por solicitud
+- [ ] Uso total de IA
