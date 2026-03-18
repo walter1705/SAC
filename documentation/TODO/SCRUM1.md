@@ -100,5 +100,5 @@ Define roles:
 🔹 AI (Conceptual Design)
 
 - [x] Define which AI FR will be implemented (09 or 10)
-- [ ] Design integration point
-- [ ] Ensure independence (FR-11)
+- [x] Design integration point
+- [x] Ensure independence (FR-11)

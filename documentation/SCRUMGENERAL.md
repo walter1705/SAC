@@ -14,47 +14,47 @@ Define the system's architecture, domain, and contracts.
 Milestone Backlog
 🔹 Requirements Analysis
 
-- [ ] Analyze all FRs from the document
-- [ ] Identify system actors
-- [ ] Define main use cases
-- [ ] Validate project scope with the team
+- [x] Analyze all FRs from the document
+- [x] Identify system actors
+- [x] Define main use cases
+- [x] Validate project scope with the team
 
 🔹 Domain Modeling
 
-- [ ] Create UML class diagram
-- [ ] Model Request entity
-- [ ] Model User / Assignee entity
-- [ ] Model Request History
-- [ ] Model Lifecycle States
+- [x] Create UML class diagram
+- [x] Model Request entity
+- [x] Model User / Assignee entity
+- [x] Model Request History
+- [x] Model Lifecycle States
 
 🔹 Architecture Design
 
-- [ ] Define layered architecture
-- [ ] Design Spring Boot package structure
-- [ ] Define ORM entities
-- [ ] Design design patterns to use
-- [ ] Define optional AI integration
+- [x] Define layered architecture
+- [x] Design Spring Boot package structure
+- [x] Define ORM entities
+- [x] Design design patterns to use
+- [x] Define optional AI integration
 
 🔹 REST API Design
 
-- [ ] Define endpoints for FR-01 to FR-08
-- [ ] Define JSON request/response
-- [ ] Document API contracts
-- [ ] Define HTTP status codes
+- [x] Define endpoints for FR-01 to FR-08
+- [x] Define JSON request/response
+- [x] Document API contracts
+- [x] Define HTTP status codes
 
 🔹 Internal Scrum
 
-- [ ] Weekly sprint planning
-- [ ] Daily standups
-- [ ] Model sprint review
-- [ ] Retrospective
+- [x] Weekly sprint planning
+- [x] Daily standups
+- [x] Model sprint review
+- [x] Retrospective
 
 ✔ Milestone 1 Deliverables
 
-- [ ] Complete UML
-- [ ] Architecture design
-- [ ] API document
-- [ ] Refined Milestone 2 backlog
+- [x] Complete UML
+- [x] Architecture design
+- [x] API document
+- [x] Refined Milestone 2 backlog
 
 ✅ MILESTONE 2 – Backend and Logic (Weeks 6–10)
 Objective
@@ -64,10 +64,10 @@ Implement a functional backend with Spring Boot.
 Milestone Backlog
 🔹 Base Configuration
 
-- [ ] Create Spring Boot project
-- [ ] Configure database
-- [ ] Configure ORM (JPA/Hibernate)
-- [ ] Configure repositories
+- [x] Create Spring Boot project
+- [x] Configure database
+- [x] Configure ORM (JPA/Hibernate)
+- [x] Configure repositories
 
 🔹 FR Implementation
 
