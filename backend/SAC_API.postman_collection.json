@@ -1,0 +1,630 @@
+{
+  "info": {
+    "_postman_id": "sac-api-collection",
+    "name": "SAC API - Sistema de Atención y Clasificación",
+    "description": "Colección completa de endpoints para el Sistema de Atención y Clasificación (SAC) de solicitudes académicas.\n\n## Autenticación\nTodos los endpoints (excepto login) requieren un token JWT Bearer. El token se guarda automáticamente después del login exitoso.\n\n## Roles\n- ADMINISTRADOR: Acceso total\n- GESTOR: Gestionar solicitudes y asignaciones\n- CONSULTOR: Solo lectura",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "    pm.collectionVariables.set(\"userId\", jsonData.usuario.id);",
+                  "    console.log(\"Token guardado: \" + jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreUsuario\": \"admin\",\n  \"contrasena\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "login"]
+            },
+            "description": "Autenticación de usuario. Retorna un token JWT válido por 24 horas."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            },
+            "description": "Lista todos los usuarios activos del sistema.\n\n**Roles permitidos:** ADMINISTRADOR"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear Usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreCompleto\": \"Juan Pérez García\",\n  \"nombreUsuario\": \"juanperez\",\n  \"contrasena\": \"password123\",\n  \"email\": \"juan.perez@uniquindio.edu.co\",\n  \"rol\": \"GESTOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios"]
+            },
+            "description": "Crea un nuevo usuario en el sistema.\n\n**Roles permitidos:** ADMINISTRADOR\n\n**Roles disponibles:**\n- ADMINISTRADOR\n- GESTOR\n- CONSULTOR"
+          },
+          "response": []
+        },
+        {
+          "name": "Cambiar Estado Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/{{userId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "{{userId}}", "estado"]
+            },
+            "description": "Activa o desactiva un usuario (soft delete).\n\n**Roles permitidos:** ADMINISTRADOR"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para gestión de usuarios y autenticación"
+    },
+    {
+      "name": "Solicitudes",
+      "item": [
+        {
+          "name": "Crear Solicitud",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteNombre\": \"María González\",\n  \"estudianteCorreo\": \"maria.gonzalez@uniquindio.edu.co\",\n  \"estudianteTelefono\": \"3001234567\",\n  \"estudianteIdentificacion\": \"1094567890\",\n  \"asunto\": \"Solicitud de homologación de materias\",\n  \"descripcion\": \"Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior\",\n  \"canalOrigen\": \"EMAIL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes"]
+            },
+            "description": "Crea una nueva solicitud académica.\n\n**Canales de origen disponibles:**\n- EMAIL\n- TELEFONO\n- PRESENCIAL\n- WEB\n\n**Estado inicial:** REGISTRADA"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Solicitudes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes?page=0&size=20&sort=fechaHoraRegistro,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes"],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "REGISTRADA",
+                  "description": "REGISTRADA, CLASIFICADA, EN_ATENCION, ATENDIDA, CERRADA",
+                  "disabled": true
+                },
+                {
+                  "key": "tipo",
+                  "value": "CONSULTA",
+                  "description": "CONSULTA, CANCELACION, REGISTRO, HOMOLOGACION, CUPOS",
+                  "disabled": true
+                },
+                {
+                  "key": "prioridad",
+                  "value": "ALTA",
+                  "description": "ALTA, MEDIA, BAJA",
+                  "disabled": true
+                },
+                {
+                  "key": "responsable",
+                  "value": "2",
+                  "description": "ID del usuario responsable",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Número de página (base 0)"
+                },
+                {
+                  "key": "size",
+                  "value": "20",
+                  "description": "Tamaño de página (máx 100)"
+                },
+                {
+                  "key": "sort",
+                  "value": "fechaHoraRegistro,desc",
+                  "description": "Campo y dirección de ordenamiento"
+                }
+              ]
+            },
+            "description": "Lista solicitudes con paginación y filtros opcionales.\n\n**Filtros disponibles:**\n- estado\n- tipo\n- prioridad\n- responsable (ID de usuario)\n\n**Ordenamiento:** campo,dirección (ej: fechaHoraRegistro,desc)"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Solicitud por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}"]
+            },
+            "description": "Obtiene los detalles completos de una solicitud específica."
+          },
+          "response": []
+        },
+        {
+          "name": "Clasificar Solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HOMOLOGACION\",\n  \"prioridad\": \"ALTA\",\n  \"notaClasificacion\": \"Solicitud de homologación con documentación completa\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/clasificar",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "solicitudes",
+                "{{solicitudId}}",
+                "clasificar"
+              ]
+            },
+            "description": "Clasifica una solicitud asignando tipo y prioridad.\n\n**Roles permitidos:** ADMINISTRADOR, GESTOR\n\n**Estado requerido:** REGISTRADA\n**Estado resultante:** CLASIFICADA\n\n**Tipos disponibles:**\n- CONSULTA\n- CANCELACION\n- REGISTRO\n- HOMOLOGACION\n- CUPOS\n\n**Prioridades:**\n- ALTA\n- MEDIA\n- BAJA"
+          },
+          "response": []
+        },
+        {
+          "name": "Cambiar Estado Solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"EN_ATENCION\",\n  \"nota\": \"Iniciando atención de la solicitud\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "estado"]
+            },
+            "description": "Cambia el estado de una solicitud siguiendo el flujo:\nREGISTRADA → CLASIFICADA → EN_ATENCION → ATENDIDA → CERRADA\n\n**Roles permitidos:** ADMINISTRADOR, GESTOR\n\n**Estados disponibles:**\n- CLASIFICADA\n- EN_ATENCION\n- ATENDIDA\n- CERRADA"
+          },
+          "response": []
+        },
+        {
+          "name": "Asignar Responsable",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responsableId\": 2,\n  \"notaAsignacion\": \"Asignación por experiencia en homologaciones\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/asignar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "asignar"]
+            },
+            "description": "Asigna o reasigna un responsable a una solicitud.\n\n**Roles permitidos:** ADMINISTRADOR, GESTOR\n\nSe puede asignar en cualquier estado excepto CERRADA."
+          },
+          "response": []
+        },
+        {
+          "name": "Cerrar Solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolucion\": \"Se aprobó la homologación de las materias Cálculo I y Álgebra Lineal. El estudiante debe presentar los certificados en la oficina de registro.\",\n  \"notasCierre\": \"Solicitud resuelta satisfactoriamente\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/cerrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "cerrar"]
+            },
+            "description": "Cierra una solicitud con una resolución final.\n\n**Roles permitidos:** ADMINISTRADOR, GESTOR\n\n**Estado requerido:** ATENDIDA\n**Estado resultante:** CERRADA\n\nUna solicitud cerrada no puede modificarse."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Historial",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/historial",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "solicitudes",
+                "{{solicitudId}}",
+                "historial"
+              ]
+            },
+            "description": "Obtiene el historial completo de cambios de una solicitud.\n\nIncluye todos los cambios de estado, clasificaciones, asignaciones y cierre."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints para gestión de solicitudes académicas"
+    },
+    {
+      "name": "Ejemplos Completos",
+      "item": [
+        {
+          "name": "Flujo: Crear y Cerrar Solicitud",
+          "item": [
+            {
+              "name": "1. Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                      "    console.log(\"✓ Token guardado\");",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreUsuario\": \"admin\",\n  \"contrasena\": \"admin123\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios", "login"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "2. Crear Solicitud",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"solicitudId\", jsonData.id);",
+                      "    console.log(\"✓ Solicitud creada con ID: \" + jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"estudianteNombre\": \"Carlos Ramírez\",\n  \"estudianteCorreo\": \"carlos.ramirez@uniquindio.edu.co\",\n  \"estudianteTelefono\": \"3159876543\",\n  \"estudianteIdentificacion\": \"1094123456\",\n  \"asunto\": \"Solicitud de cupo en Programación Avanzada\",\n  \"descripcion\": \"Necesito un cupo en la materia Programación Avanzada para completar mi pensum académico\",\n  \"canalOrigen\": \"WEB\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "3. Clasificar Solicitud",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipo\": \"CUPOS\",\n  \"prioridad\": \"ALTA\",\n  \"notaClasificacion\": \"Solicitud de cupo en materia con disponibilidad limitada\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/clasificar",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "clasificar"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "4. Asignar Responsable",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"responsableId\": 2,\n  \"notaAsignacion\": \"Asignado al coordinador académico\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/asignar",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "asignar"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "5. Cambiar Estado a EN_ATENCION",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nuevoEstado\": \"EN_ATENCION\",\n  \"nota\": \"Verificando disponibilidad de cupos\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "estado"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "6. Cambiar Estado a ATENDIDA",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nuevoEstado\": \"ATENDIDA\",\n  \"nota\": \"Se encontró cupo disponible\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "estado"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "7. Cerrar Solicitud",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"resolucion\": \"Se asignó cupo al estudiante en la materia Programación Avanzada, grupo 1. Debe confirmar matrícula antes del 30 de enero.\",\n  \"notasCierre\": \"Solicitud resuelta exitosamente\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/cerrar",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "cerrar"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "8. Ver Historial Completo",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/historial",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "solicitudes",
+                    "{{solicitudId}}",
+                    "historial"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "description": "Secuencia completa para crear y cerrar una solicitud, desde el login hasta ver el historial."
+        }
+      ],
+      "description": "Ejemplos de flujos completos de uso de la API"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "solicitudId",
+      "value": "1",
+      "type": "string"
+    }
+  ]
+}
