@@ -5,9 +5,11 @@ import com.uniquindio.backend.model.enums.RolUsuario;
 import com.uniquindio.backend.repository.UsuarioRepository;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("!test")
 public class DataSeeder implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
