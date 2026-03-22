@@ -1,0 +1,26 @@
+spring.application.name=backend
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/sac_dev
+spring.datasource.username=dev
+spring.datasource.password=0818
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+
+## OPENAPI
+
+springdoc.swagger-ui.url=/openapi.yaml
+
+## JWT
+
+jwt.secret=SAC_Sistema_Atencion_Clasificacion_SecretKey_2026_UniqueKey_MinLength32Chars
+jwt.expiration=3600000
+
+## Google AI Gemini
+
+google.ai.api-key=AIzaSyD17tsqYocIl5q_lwn-pocgvXz8TJlZp5o
+google.ai.model=gemini-3-flash-preview
+google.ai.temperature=0.7
