@@ -1,0 +1,487 @@
+package com.uniquindio.backend.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uniquindio.backend.model.dto.request.AsignarResponsableRequest;
+import com.uniquindio.backend.model.dto.request.CambiarEstadoRequest;
+import com.uniquindio.backend.model.dto.request.CerrarSolicitudRequest;
+import com.uniquindio.backend.model.dto.request.ClasificarSolicitudRequest;
+import com.uniquindio.backend.model.dto.request.CrearSolicitudRequest;
+import com.uniquindio.backend.model.dto.response.AsignacionResponse;
+import com.uniquindio.backend.model.dto.response.HistorialResponse;
+import com.uniquindio.backend.model.dto.response.SolicitudResponse;
+import com.uniquindio.backend.model.dto.response.SolicitudesPaginadasResponse;
+import com.uniquindio.backend.model.enums.CanalOrigen;
+import com.uniquindio.backend.model.enums.EstadoSolicitud;
+import com.uniquindio.backend.model.enums.Prioridad;
+import com.uniquindio.backend.model.enums.TipoSolicitud;
+import com.uniquindio.backend.service.SolicitudService;
+import com.uniquindio.backend.util.config.JacksonConfig;
+import com.uniquindio.backend.util.exception.BadRequestException;
+import com.uniquindio.backend.util.exception.ResourceNotFoundException;
+import com.uniquindio.backend.util.security.JwtAuthenticationEntryPoint;
+import com.uniquindio.backend.util.security.JwtAuthenticationFilter;
+import com.uniquindio.backend.util.security.JwtUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Instant;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
+@ActiveProfiles("test")
+@Import({SolicitudControllerTest.TestSecurityConfig.class, JacksonConfig.class})
+@EnableAutoConfiguration
+class SolicitudControllerTest {
+
+    @TestConfiguration
+    static class TestSecurityConfig {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http.csrf(AbstractHttpConfigurer::disable)
+                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
+        }
+    }
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private SolicitudService solicitudService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    private SolicitudResponse testSolicitudResponse;
+
+    @BeforeEach
+    void setUp() {
+        testSolicitudResponse = SolicitudResponse.builder()
+                .id(1L)
+                .estudianteNombre("Pedro Estudiante")
+                .estudianteCorreo("pedro@uni.edu.co")
+                .estudianteTelefono("3001234567")
+                .estudianteIdentificacion("12345678")
+                .asunto("Solicitud de homologacion")
+                .descripcion("Necesito homologar materias")
+                .canalOrigen(CanalOrigen.WEB)
+                .fechaHoraRegistro(Instant.now())
+                .estado(EstadoSolicitud.REGISTRADA)
+                .build();
+    }
+
+    @Test
+    @DisplayName("Crear solicitud exitosa retorna 201 CREATED")
+    void crearSolicitud_conDatosValidos_retorna201() throws Exception {
+        CrearSolicitudRequest request = new CrearSolicitudRequest();
+        request.setEstudianteNombre("Pedro Estudiante");
+        request.setEstudianteCorreo("pedro@uni.edu.co");
+        request.setEstudianteTelefono("3001234567");
+        request.setEstudianteIdentificacion("12345678");
+        request.setAsunto("Solicitud de homologacion");
+        request.setDescripcion("Necesito homologar materias del programa anterior");
+        request.setCanalOrigen(CanalOrigen.WEB);
+
+        when(solicitudService.crearSolicitud(any(CrearSolicitudRequest.class), anyString()))
+                .thenReturn(testSolicitudResponse);
+
+        mockMvc.perform(post("/api/v1/solicitudes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.estudianteNombre").value("Pedro Estudiante"))
+                .andExpect(jsonPath("$.estado").value("REGISTRADA"));
+    }
+
+    @Test
+    @DisplayName("Crear solicitud sin asunto retorna 400")
+    void crearSolicitud_sinAsunto_retorna400() throws Exception {
+        CrearSolicitudRequest request = new CrearSolicitudRequest();
+        request.setEstudianteNombre("Pedro Estudiante");
+        request.setEstudianteCorreo("pedro@uni.edu.co");
+        request.setDescripcion("Descripcion de la solicitud");
+        request.setCanalOrigen(CanalOrigen.WEB);
+
+        mockMvc.perform(post("/api/v1/solicitudes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Crear solicitud sin descripcion retorna 400")
+    void crearSolicitud_sinDescripcion_retorna400() throws Exception {
+        CrearSolicitudRequest request = new CrearSolicitudRequest();
+        request.setEstudianteNombre("Pedro Estudiante");
+        request.setEstudianteCorreo("pedro@uni.edu.co");
+        request.setAsunto("Asunto de prueba");
+        request.setCanalOrigen(CanalOrigen.WEB);
+
+        mockMvc.perform(post("/api/v1/solicitudes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Listar solicitudes retorna 200 OK")
+    void listarSolicitudes_sinFiltros_retorna200() throws Exception {
+        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
+                .content(List.of(testSolicitudResponse))
+                .pagina(0)
+                .tamaño(20)
+                .totalElementos(1L)
+                .totalPaginas(1)
+                .build();
+
+        when(solicitudService.listarSolicitudes(isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/solicitudes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElementos").value(1));
+    }
+
+    @Test
+    @DisplayName("Listar solicitudes con filtro de estado retorna 200 OK")
+    void listarSolicitudes_conFiltroEstado_retorna200() throws Exception {
+        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
+                .content(List.of())
+                .pagina(0)
+                .tamaño(20)
+                .totalElementos(0L)
+                .totalPaginas(0)
+                .build();
+
+        when(solicitudService.listarSolicitudes(
+                eq(EstadoSolicitud.REGISTRADA), isNull(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/solicitudes")
+                        .param("estado", "REGISTRADA"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Listar solicitudes con paginacion personalizada")
+    void listarSolicitudes_conPaginacion_retorna200() throws Exception {
+        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
+                .content(List.of())
+                .pagina(1)
+                .tamaño(10)
+                .totalElementos(15L)
+                .totalPaginas(2)
+                .build();
+
+        when(solicitudService.listarSolicitudes(isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
+                .thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/solicitudes")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagina").value(1))
+                .andExpect(jsonPath("$['tamaño']").value(10));
+    }
+
+    @Test
+    @DisplayName("Obtener solicitud existente retorna 200 OK")
+    void obtenerSolicitud_conIdValido_retorna200() throws Exception {
+        when(solicitudService.obtenerPorId(1L)).thenReturn(testSolicitudResponse);
+
+        mockMvc.perform(get("/api/v1/solicitudes/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.estudianteNombre").value("Pedro Estudiante"));
+    }
+
+    @Test
+    @DisplayName("Obtener solicitud no existente retorna 404")
+    void obtenerSolicitud_noExistente_retorna404() throws Exception {
+        when(solicitudService.obtenerPorId(999L))
+                .thenThrow(new ResourceNotFoundException("Solicitud con ID 999 no encontrada"));
+
+        mockMvc.perform(get("/api/v1/solicitudes/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Clasificar solicitud exitosa retorna 200 OK")
+    void clasificarSolicitud_conDatosValidos_retorna200() throws Exception {
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
+        request.setTipo(TipoSolicitud.HOMOLOGACION);
+        request.setPrioridad(Prioridad.ALTA);
+        request.setNotaClasificacion("Solicitud prioritaria");
+
+        SolicitudResponse response = SolicitudResponse.builder()
+                .id(1L)
+                .estado(EstadoSolicitud.CLASIFICADA)
+                .tipo(TipoSolicitud.HOMOLOGACION)
+                .prioridad(Prioridad.ALTA)
+                .build();
+
+        when(solicitudService.clasificarSolicitud(eq(1L), any(ClasificarSolicitudRequest.class), anyString()))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("CLASIFICADA"))
+                .andExpect(jsonPath("$.tipo").value("HOMOLOGACION"))
+                .andExpect(jsonPath("$.prioridad").value("ALTA"));
+    }
+
+    @Test
+    @DisplayName("Clasificar solicitud ya clasificada retorna 400")
+    void clasificarSolicitud_yaClasificada_retorna400() throws Exception {
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
+        request.setTipo(TipoSolicitud.HOMOLOGACION);
+        request.setPrioridad(Prioridad.ALTA);
+        request.setNotaClasificacion("Nota");
+
+        when(solicitudService.clasificarSolicitud(eq(1L), any(ClasificarSolicitudRequest.class), anyString()))
+                .thenThrow(new BadRequestException("Solo se pueden clasificar solicitudes en estado REGISTRADA"));
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Clasificar solicitud sin tipo retorna 400")
+    void clasificarSolicitud_sinTipo_retorna400() throws Exception {
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
+        request.setPrioridad(Prioridad.ALTA);
+        request.setNotaClasificacion("Nota");
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Cambiar estado exitoso retorna 200 OK")
+    void cambiarEstado_transicionValida_retorna200() throws Exception {
+        CambiarEstadoRequest request = new CambiarEstadoRequest();
+        request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
+        request.setNota("Iniciando atencion");
+
+        SolicitudResponse response = SolicitudResponse.builder()
+                .id(1L)
+                .estado(EstadoSolicitud.EN_ATENCION)
+                .build();
+
+        when(solicitudService.cambiarEstado(eq(1L), any(CambiarEstadoRequest.class), anyString()))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("EN_ATENCION"));
+    }
+
+    @Test
+    @DisplayName("Cambiar estado con transicion invalida retorna 400")
+    void cambiarEstado_transicionInvalida_retorna400() throws Exception {
+        CambiarEstadoRequest request = new CambiarEstadoRequest();
+        request.setNuevoEstado(EstadoSolicitud.CERRADA);
+
+        when(solicitudService.cambiarEstado(eq(1L), any(CambiarEstadoRequest.class), anyString()))
+                .thenThrow(new BadRequestException("Transición de estado inválida"));
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Cambiar estado sin nuevo estado retorna 400")
+    void cambiarEstado_sinNuevoEstado_retorna400() throws Exception {
+        CambiarEstadoRequest request = new CambiarEstadoRequest();
+        request.setNota("Nota sin estado");
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Asignar responsable exitoso retorna 201 CREATED")
+    void asignarResponsable_conDatosValidos_retorna201() throws Exception {
+        AsignarResponsableRequest request = new AsignarResponsableRequest();
+        request.setResponsableId(1L);
+        request.setNotaAsignacion("Asignacion urgente");
+
+        AsignacionResponse response = AsignacionResponse.builder()
+                .id(1L)
+                .solicitudId(1L)
+                .usuarioId(1L)
+                .activa(true)
+                .fechaAsignacion(Instant.now())
+                .build();
+
+        when(solicitudService.asignarResponsable(eq(1L), any(AsignarResponsableRequest.class), anyString()))
+                .thenReturn(response);
+
+        mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.solicitudId").value(1))
+                .andExpect(jsonPath("$.usuarioId").value(1))
+                .andExpect(jsonPath("$.activa").value(true));
+    }
+
+    @Test
+    @DisplayName("Asignar usuario inactivo retorna 400")
+    void asignarResponsable_usuarioInactivo_retorna400() throws Exception {
+        AsignarResponsableRequest request = new AsignarResponsableRequest();
+        request.setResponsableId(1L);
+
+        when(solicitudService.asignarResponsable(eq(1L), any(AsignarResponsableRequest.class), anyString()))
+                .thenThrow(new BadRequestException("No se puede asignar un usuario inactivo"));
+
+        mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Asignar sin responsable ID retorna 400")
+    void asignarResponsable_sinResponsableId_retorna400() throws Exception {
+        AsignarResponsableRequest request = new AsignarResponsableRequest();
+        request.setNotaAsignacion("Nota sin responsable");
+
+        mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Cerrar solicitud exitosa retorna 200 OK")
+    void cerrarSolicitud_conDatosValidos_retorna200() throws Exception {
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
+        request.setResolucion("Solicitud resuelta satisfactoriamente");
+        request.setNotasCierre("Se homologaron 3 materias");
+
+        SolicitudResponse response = SolicitudResponse.builder()
+                .id(1L)
+                .estado(EstadoSolicitud.CERRADA)
+                .resolucion("Solicitud resuelta satisfactoriamente")
+                .notasCierre("Se homologaron 3 materias")
+                .build();
+
+        when(solicitudService.cerrarSolicitud(eq(1L), any(CerrarSolicitudRequest.class), anyString()))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("CERRADA"))
+                .andExpect(jsonPath("$.resolucion").value("Solicitud resuelta satisfactoriamente"));
+    }
+
+    @Test
+    @DisplayName("Cerrar solicitud no atendida retorna 400")
+    void cerrarSolicitud_noAtendida_retorna400() throws Exception {
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
+        request.setResolucion("Resolucion");
+
+        when(solicitudService.cerrarSolicitud(eq(1L), any(CerrarSolicitudRequest.class), anyString()))
+                .thenThrow(new BadRequestException("No se puede cerrar la solicitud"));
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Cerrar solicitud sin resolucion retorna 400")
+    void cerrarSolicitud_sinResolucion_retorna400() throws Exception {
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
+        request.setNotasCierre("Notas sin resolucion");
+
+        mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Obtener historial exitoso retorna 200 OK")
+    void obtenerHistorial_conSolicitudExistente_retorna200() throws Exception {
+        HistorialResponse historial = HistorialResponse.builder()
+                .id(1L)
+                .fechaHora(Instant.now())
+                .accion("REGISTRO")
+                .usuarioResponsable("admin")
+                .observaciones("Solicitud creada")
+                .build();
+
+        when(solicitudService.obtenerHistorial(1L)).thenReturn(List.of(historial));
+
+        mockMvc.perform(get("/api/v1/solicitudes/1/historial"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].accion").value("REGISTRO"));
+    }
+
+    @Test
+    @DisplayName("Obtener historial de solicitud no existente retorna 404")
+    void obtenerHistorial_solicitudNoExistente_retorna404() throws Exception {
+        when(solicitudService.obtenerHistorial(999L))
+                .thenThrow(new ResourceNotFoundException("Solicitud con ID 999 no encontrada"));
+
+        mockMvc.perform(get("/api/v1/solicitudes/999/historial"))
+                .andExpect(status().isNotFound());
+    }
+}
