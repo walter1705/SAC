@@ -39,14 +39,17 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/usuarios/*/estado").hasRole("ADMINISTRADOR")
                 // Solicitud endpoints - Role based access
-                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasRole("GESTOR")
-                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("CONSULTOR", "GESTOR", "ADMINISTRADOR")
-                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*/historial").hasAnyRole("CONSULTOR", "GESTOR", "ADMINISTRADOR")
-                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("CONSULTOR", "GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*/historial").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/clasificar").hasRole("GESTOR")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/estado").hasRole("GESTOR")
                 .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/*/asignar").hasRole("GESTOR")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/cerrar").hasRole("GESTOR")
+                // IA endpoints - Role based access
+                .requestMatchers(HttpMethod.POST, "/api/v1/ia/sugerir-clasificacion").hasRole("GESTOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/ia/solicitudes/*/resumen").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

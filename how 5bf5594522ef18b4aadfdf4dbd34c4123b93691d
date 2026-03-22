@@ -21,6 +21,6 @@ jwt.expiration=3600000
 
 ## Google AI Gemini
 
-google.ai.api-key=
+google.ai.api-key=AIzaSyD17tsqYocIl5q_lwn-pocgvXz8TJlZp5o
 google.ai.model=gemini-3-flash-preview
 google.ai.temperature=0.7

@@ -15,7 +15,7 @@ info:
     |----------------|------------------------------------|
     | ADMINISTRADOR  | Acceso total a todos los recursos  |
     | GESTOR         | Gestionar solicitudes y asignaciones |
-    | CONSULTOR      | Acceso de solo lectura a solicitudes |
+    | SOLICITANTE      | Acceso de solo lectura a solicitudes |
 
     ## Ciclo de Vida de Solicitudes
     ```
@@ -119,7 +119,7 @@ paths:
       description: |
         Retorna una lista paginada de solicitudes académicas. Soporta filtrado por estado,
         tipo, prioridad y usuario asignado.
-        **Rol requerido:** `CONSULTOR`
+        **Rol requerido:** `SOLICITANTE`
       operationId: listarSolicitudes
       security:
         - BearerAuth: []
@@ -222,7 +222,7 @@ paths:
       summary: Obtener detalle de solicitud por ID
       description: |
         Retorna el detalle completo de una solicitud académica.
-        **Rol requerido:** `CONSULTOR`
+        **Rol requerido:** `SOLICITANTE`
       operationId: obtenerSolicitudPorId
       security:
         - BearerAuth: []
@@ -481,7 +481,7 @@ paths:
       description: |
         Retorna el rastro de auditoría completo de todas las acciones realizadas en una solicitud,
         ordenado cronológicamente.
-        **Rol requerido:** `CONSULTOR`
+        **Rol requerido:** `SOLICITANTE`
       operationId: obtenerHistorialSolicitud
       security:
         - BearerAuth: []
@@ -605,7 +605,7 @@ paths:
                   nombre: 'Juan García'
                 - id: 8
                   username: 'mrodriguez'
-                  rol: CONSULTOR
+                  rol: SOLICITANTE
                   activo: true
                   nombre: 'María Rodríguez'
         '401':
@@ -782,7 +782,7 @@ paths:
         `503 Service Unavailable` y se puede consultar el historial directamente mediante
         `GET /api/v1/solicitudes/{id}/historial`.
 
-        **Rol requerido:** `CONSULTOR`
+        **Rol requerido:** `SOLICITANTE`
       operationId: generarResumenSolicitud
       security:
         - BearerAuth: []
@@ -902,7 +902,7 @@ components:
       enum:
         - ADMINISTRADOR
         - GESTOR
-        - CONSULTOR
+        - SOLICITANTE
 
     # ── Cuerpos de Solicitud ──────────────────
 
@@ -1446,7 +1446,7 @@ components:
             timestamp: '2026-03-01T12:00:00Z'
             status: 403
             error: Prohibido
-            message: 'Acceso denegado – rol CONSULTOR no puede realizar esta acción'
+            message: 'Acceso denegado – rol SOLICITANTE no puede realizar esta acción'
             path: /api/v1/solicitudes
 
     NoEncontrado:
