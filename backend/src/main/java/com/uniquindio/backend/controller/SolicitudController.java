@@ -28,8 +28,8 @@ public class SolicitudController {
     public ResponseEntity<SolicitudResponse> crearSolicitud(
             @Valid @RequestBody CrearSolicitudRequest request,
             Authentication authentication) {
-        String username = getUsername(authentication);
-        SolicitudResponse response = solicitudService.crearSolicitud(request, username);
+        String nombreUsuario = getNombreUsuario(authentication);
+        SolicitudResponse response = solicitudService.crearSolicitud(request, nombreUsuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -60,8 +60,8 @@ public class SolicitudController {
             @PathVariable Long id,
             @Valid @RequestBody ClasificarSolicitudRequest request,
             Authentication authentication) {
-        String username = getUsername(authentication);
-        SolicitudResponse response = solicitudService.clasificarSolicitud(id, request, username);
+        String nombreUsuario = getNombreUsuario(authentication);
+        SolicitudResponse response = solicitudService.clasificarSolicitud(id, request, nombreUsuario);
         return ResponseEntity.ok(response);
     }
 
@@ -70,8 +70,8 @@ public class SolicitudController {
             @PathVariable Long id,
             @Valid @RequestBody CambiarEstadoRequest request,
             Authentication authentication) {
-        String username = getUsername(authentication);
-        SolicitudResponse response = solicitudService.cambiarEstado(id, request, username);
+        String nombreUsuario = getNombreUsuario(authentication);
+        SolicitudResponse response = solicitudService.cambiarEstado(id, request, nombreUsuario);
         return ResponseEntity.ok(response);
     }
 
@@ -80,8 +80,8 @@ public class SolicitudController {
             @PathVariable Long id,
             @Valid @RequestBody AsignarResponsableRequest request,
             Authentication authentication) {
-        String username = getUsername(authentication);
-        AsignacionResponse response = solicitudService.asignarResponsable(id, request, username);
+        String nombreUsuario = getNombreUsuario(authentication);
+        AsignacionResponse response = solicitudService.asignarResponsable(id, request, nombreUsuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -90,8 +90,8 @@ public class SolicitudController {
             @PathVariable Long id,
             @Valid @RequestBody CerrarSolicitudRequest request,
             Authentication authentication) {
-        String username = getUsername(authentication);
-        SolicitudResponse response = solicitudService.cerrarSolicitud(id, request, username);
+        String nombreUsuario = getNombreUsuario(authentication);
+        SolicitudResponse response = solicitudService.cerrarSolicitud(id, request, nombreUsuario);
         return ResponseEntity.ok(response);
     }
 
@@ -101,9 +101,9 @@ public class SolicitudController {
         return ResponseEntity.ok(historial);
     }
 
-    private String getUsername(Authentication authentication) {
+    private String getNombreUsuario(Authentication authentication) {
         if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario) {
-            return usuario.getUsername();
+            return usuario.getNombreUsuario();
         }
         return "system";
     }

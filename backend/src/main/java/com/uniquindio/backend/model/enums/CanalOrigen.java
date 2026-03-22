@@ -2,7 +2,8 @@ package com.uniquindio.backend.model.enums;
 
 public enum CanalOrigen {
     CSU,
-    CORREO,
+    EMAIL,
+    WEB,
     SAC,
     TELEFONICO,
     PRESENCIAL

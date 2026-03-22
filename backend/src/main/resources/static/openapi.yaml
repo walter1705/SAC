@@ -870,7 +870,8 @@ components:
       description: Canal de origen por el cual se recibió la solicitud
       enum:
         - CSU
-        - CORREO
+        - EMAIL
+        - WEB
         - SAC
         - TELEFONICO
         - PRESENCIAL
@@ -909,27 +910,52 @@ components:
       type: object
       description: Payload para crear una nueva solicitud académica
       required:
-        - tipo
+        - estudianteNombre
+        - estudianteCorreo
+        - estudianteTelefono
+        - estudianteIdentificacion
+        - asunto
         - descripcion
         - canalOrigen
-        - idSolicitante
       properties:
-        tipo:
-          $ref: '#/components/schemas/TipoSolicitud'
+        estudianteNombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del estudiante
+          example: 'María González'
+        estudianteCorreo:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del estudiante
+          example: 'maria.gonzalez@uniquindio.edu.co'
+        estudianteTelefono:
+          type: string
+          minLength: 7
+          maxLength: 20
+          description: Número de teléfono del estudiante
+          example: '3001234567'
+        estudianteIdentificacion:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Número de identificación del estudiante
+          example: '1094567890'
+        asunto:
+          type: string
+          minLength: 5
+          maxLength: 200
+          description: Asunto o título breve de la solicitud
+          example: 'Solicitud de homologación de materias'
         descripcion:
           type: string
           minLength: 10
           maxLength: 2000
           description: Descripción detallada de la solicitud académica
-          example: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+          example: 'Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior'
         canalOrigen:
           $ref: '#/components/schemas/CanalOrigen'
-        idSolicitante:
-          type: string
-          minLength: 1
-          maxLength: 50
-          description: Identificador único del solicitante (ID estudiante, ID empleado, etc.)
-          example: '1094000001'
 
     ClasificarSolicitudBody:
       type: object
@@ -937,18 +963,18 @@ components:
       required:
         - tipo
         - prioridad
-        - justificacionPrioridad
+        - notaClasificacion
       properties:
         tipo:
           $ref: '#/components/schemas/TipoSolicitud'
         prioridad:
           $ref: '#/components/schemas/Prioridad'
-        justificacionPrioridad:
+        notaClasificacion:
           type: string
           minLength: 5
           maxLength: 500
-          description: Justificación para el nivel de prioridad asignado
-          example: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
+          description: Nota o justificación para la clasificación y prioridad asignada
+          example: 'Solicitud de homologación con documentación completa'
 
     CambiarEstadoBody:
       type: object
@@ -958,88 +984,105 @@ components:
       properties:
         nuevoEstado:
           $ref: '#/components/schemas/EstadoSolicitud'
-        observacion:
+        nota:
           type: string
           maxLength: 1000
-          description: Observación opcional sobre el cambio de estado
-          example: 'La solicitud está siendo atendida por el personal asignado'
+          description: Nota opcional sobre el cambio de estado
+          example: 'Iniciando atención de la solicitud'
 
     AsignarResponsableBody:
       type: object
       description: Payload para asignar un usuario responsable a una solicitud
       required:
-        - usuarioId
+        - responsableId
       properties:
-        usuarioId:
+        responsableId:
           type: integer
           format: int64
           description: ID del usuario a asignar como responsable
-          example: 5
+          example: 2
+        notaAsignacion:
+          type: string
+          maxLength: 500
+          description: Nota opcional sobre la asignación
+          example: 'Asignación por experiencia en homologaciones'
 
     CerrarSolicitudBody:
       type: object
-      description: Payload para cerrar una solicitud (requiere observación de cierre)
+      description: Payload para cerrar una solicitud (requiere resolución y notas de cierre)
       required:
-        - observacionCierre
+        - resolucion
       properties:
-        observacionCierre:
+        resolucion:
           type: string
           minLength: 10
           maxLength: 2000
-          description: Observación obligatoria explicando la resolución
-          example: 'Solicitud resuelta – cancelación aprobada por el comité académico'
+          description: Resolución obligatoria explicando cómo se resolvió la solicitud
+          example: 'Se aprobó la homologación de las materias Cálculo I y Álgebra Lineal. El estudiante debe presentar los certificados en la oficina de registro.'
+        notasCierre:
+          type: string
+          maxLength: 1000
+          description: Notas adicionales opcionales sobre el cierre
+          example: 'Solicitud resuelta satisfactoriamente'
 
     IniciarSesionBody:
       type: object
       description: Credenciales para autenticación de usuario
       required:
-        - username
-        - password
+        - nombreUsuario
+        - contrasena
       properties:
-        username:
+        nombreUsuario:
           type: string
           minLength: 3
           maxLength: 50
           description: Nombre de usuario
-          example: 'jgarcia'
-        password:
+          example: 'admin'
+        contrasena:
           type: string
           minLength: 8
           maxLength: 100
           format: password
           description: Contraseña del usuario
-          example: 'S3cur3P@ss!'
+          example: 'admin123'
 
     CrearUsuarioBody:
       type: object
       description: Payload para crear una nueva cuenta de usuario
       required:
-        - username
-        - password
+        - nombreCompleto
+        - nombreUsuario
+        - contrasena
+        - email
         - rol
-        - nombre
       properties:
-        username:
+        nombreCompleto:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del usuario
+          example: 'Juan Pérez García'
+        nombreUsuario:
           type: string
           minLength: 3
           maxLength: 50
           description: Nombre de usuario único
-          example: 'aperez'
-        password:
+          example: 'juanperez'
+        contrasena:
           type: string
           minLength: 8
           maxLength: 100
           format: password
           description: Contraseña (será encriptada del lado del servidor)
-          example: 'N3wUs3r@2026'
+          example: 'password123'
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del usuario
+          example: 'juan.perez@uniquindio.edu.co'
         rol:
           $ref: '#/components/schemas/RolUsuario'
-        nombre:
-          type: string
-          minLength: 2
-          maxLength: 100
-          description: Nombre completo para mostrar
-          example: 'Ana Pérez'
 
     CambiarEstadoUsuarioBody:
       type: object
@@ -1063,12 +1106,30 @@ components:
           format: int64
           description: ID único de la solicitud
           example: 1
-        tipo:
-          $ref: '#/components/schemas/TipoSolicitud'
+        estudianteNombre:
+          type: string
+          description: Nombre completo del estudiante
+          example: 'María González'
+        estudianteCorreo:
+          type: string
+          description: Correo electrónico del estudiante
+          example: 'maria.gonzalez@uniquindio.edu.co'
+        estudianteTelefono:
+          type: string
+          description: Número de teléfono del estudiante
+          example: '3001234567'
+        estudianteIdentificacion:
+          type: string
+          description: Número de identificación del estudiante
+          example: '1094567890'
+        asunto:
+          type: string
+          description: Asunto o título de la solicitud
+          example: 'Solicitud de homologación de materias'
         descripcion:
           type: string
           description: Descripción detallada de la solicitud
-          example: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+          example: 'Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior'
         canalOrigen:
           $ref: '#/components/schemas/CanalOrigen'
         fechaHoraRegistro:
@@ -1076,24 +1137,28 @@ components:
           format: date-time
           description: Timestamp cuando fue registrada la solicitud
           example: '2026-03-01T10:30:00Z'
-        idSolicitante:
-          type: string
-          description: Identificador del solicitante
-          example: '1094000001'
+        tipo:
+          $ref: '#/components/schemas/TipoSolicitud'
+          nullable: true
         prioridad:
           $ref: '#/components/schemas/Prioridad'
           nullable: true
-        justificacionPrioridad:
+        notaClasificacion:
           type: string
           nullable: true
-          description: Justificación para la asignación de prioridad
-          example: 'CANCELACION cerca de fecha límite'
+          description: Nota de clasificación y justificación de la prioridad
+          example: 'Solicitud de homologación con documentación completa'
         estado:
           $ref: '#/components/schemas/EstadoSolicitud'
-        observacionCierre:
+        resolucion:
           type: string
           nullable: true
-          description: Observación de cierre (solo presente cuando estado es CERRADA)
+          description: Resolución de la solicitud (solo presente cuando estado es CERRADA)
+          example: null
+        notasCierre:
+          type: string
+          nullable: true
+          description: Notas adicionales del cierre (solo presente cuando estado es CERRADA)
           example: null
 
     SolicitudesPaginadasResponse:
@@ -1187,20 +1252,24 @@ components:
           format: int64
           description: ID único del usuario
           example: 5
-        username:
+        nombreCompleto:
+          type: string
+          description: Nombre completo del usuario
+          example: 'Juan García'
+        nombreUsuario:
           type: string
           description: Nombre de usuario
           example: 'jgarcia'
+        email:
+          type: string
+          description: Correo electrónico del usuario
+          example: 'juan.garcia@uniquindio.edu.co'
         rol:
           $ref: '#/components/schemas/RolUsuario'
         activo:
           type: boolean
           description: Si la cuenta del usuario está activa
           example: true
-        nombre:
-          type: string
-          description: Nombre completo para mostrar
-          example: 'Juan García'
 
     IniciarSesionResponse:
       type: object
@@ -1214,10 +1283,10 @@ components:
           type: string
           description: Tipo de token
           example: 'Bearer'
-        username:
+        nombreUsuario:
           type: string
           description: Nombre de usuario autenticado
-          example: 'jgarcia'
+          example: 'admin'
         rol:
           $ref: '#/components/schemas/RolUsuario'
         expiraEn:

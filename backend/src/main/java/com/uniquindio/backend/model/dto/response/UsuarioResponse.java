@@ -10,8 +10,9 @@ import lombok.Data;
 public class UsuarioResponse {
 
     private Long id;
-    private String username;
+    private String nombreCompleto;
+    private String nombreUsuario;
+    private String email;
     private RolUsuario rol;
     private Boolean activo;
-    private String nombre;
 }

@@ -36,7 +36,7 @@ public class JwtUtil {
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
-                .subject(usuario.getUsername())
+                .subject(usuario.getNombreUsuario())
                 .claim("rol", usuario.getRol().name())
                 .claim("userId", usuario.getId())
                 .issuedAt(now)
@@ -45,7 +45,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
+    public String getNombreUsuarioFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()

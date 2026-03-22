@@ -20,9 +20,20 @@ public class Solicitud {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TipoSolicitud tipo;
+    @Column(nullable = false, length = 100)
+    private String estudianteNombre;
+
+    @Column(nullable = false, length = 100)
+    private String estudianteCorreo;
+
+    @Column(nullable = false, length = 20)
+    private String estudianteTelefono;
+
+    @Column(nullable = false, length = 50)
+    private String estudianteIdentificacion;
+
+    @Column(nullable = false, length = 200)
+    private String asunto;
 
     @Column(nullable = false, length = 2000)
     private String descripcion;
@@ -34,21 +45,24 @@ public class Solicitud {
     @Column(nullable = false)
     private Instant fechaHoraRegistro;
 
-    @Column(nullable = false, length = 50)
-    private String idSolicitante;
+    @Enumerated(EnumType.STRING)
+    private TipoSolicitud tipo;
 
     @Enumerated(EnumType.STRING)
     private Prioridad prioridad;
 
     @Column(length = 500)
-    private String justificacionPrioridad;
+    private String notaClasificacion;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoSolicitud estado;
 
     @Column(length = 2000)
-    private String observacionCierre;
+    private String resolucion;
+
+    @Column(length = 1000)
+    private String notasCierre;
 
     @PrePersist
     protected void onCreate() {
