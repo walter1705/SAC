@@ -47,6 +47,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/estado").hasRole("GESTOR")
                 .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/*/asignar").hasRole("GESTOR")
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/cerrar").hasRole("GESTOR")
+                // IA endpoints - Role based access
+                .requestMatchers(HttpMethod.POST, "/api/v1/ia/sugerir-clasificacion").hasRole("GESTOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/ia/solicitudes/*/resumen").hasAnyRole("CONSULTOR", "GESTOR", "ADMINISTRADOR")
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )
