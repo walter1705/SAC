@@ -12,6 +12,6 @@ public class CambiarEstadoRequest {
     @NotNull(message = "El nuevo estado es requerido")
     private EstadoSolicitud nuevoEstado;
 
-    @Size(max = 1000, message = "La observación no puede exceder 1000 caracteres")
-    private String observacion;
+    @Size(max = 1000, message = "La nota no puede exceder 1000 caracteres")
+    private String nota;
 }

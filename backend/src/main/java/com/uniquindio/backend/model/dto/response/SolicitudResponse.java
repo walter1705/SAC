@@ -12,13 +12,18 @@ import com.uniquindio.backend.model.enums.*;
 public class SolicitudResponse {
 
     private Long id;
-    private TipoSolicitud tipo;
+    private String estudianteNombre;
+    private String estudianteCorreo;
+    private String estudianteTelefono;
+    private String estudianteIdentificacion;
+    private String asunto;
     private String descripcion;
     private CanalOrigen canalOrigen;
     private Instant fechaHoraRegistro;
-    private String idSolicitante;
+    private TipoSolicitud tipo;
     private Prioridad prioridad;
-    private String justificacionPrioridad;
+    private String notaClasificacion;
     private EstadoSolicitud estado;
-    private String observacionCierre;
+    private String resolucion;
+    private String notasCierre;
 }

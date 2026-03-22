@@ -1,104 +1,104 @@
-# MILESTONE 1 – Detailed Scrum
+# HITO 1 – Scrum Detallado
 
-Phase: Design and Modeling (Weeks 1–5)
-Focus: Domain, architecture, and API contracts
+Fase: Diseno y Modelado (Semanas 1–5)
+Enfoque: Dominio, arquitectura y contratos de API
 
-1️⃣ Milestone Objective
+1️⃣ Objetivo del Hito
 
-Formally define:
+Definir formalmente:
 
-- [x] Domain model
-- [x] System architecture
-- [x] Lifecycle states
-- [x] REST API contracts
-- [x] Business rules strategy
+- [x] Modelo de dominio
+- [x] Arquitectura del sistema
+- [x] Estados del ciclo de vida
+- [x] Contratos de REST API
+- [x] Estrategia de reglas de negocio
 
-Without implementing production code yet.
+Sin implementar aun codigo de produccion.
 
-2️⃣ Milestone Product Goal
+2️⃣ Objetivo del Producto del Hito
 
-Have a validated design that allows starting backend implementation without ambiguities.
+Tener un diseno validado que permita iniciar la implementacion del backend sin ambiguedades.
 
-3️⃣ Milestone 1 Product Backlog (Derived from FRs)
-🔹 Requirements Analysis
+3️⃣ Backlog del Producto del Hito 1 (Derivado de FR)
+🔹 Analisis de Requisitos
 
-- [x] Decompose FR-01 to FR-13
-- [x] Identify explicit and implicit rules
-- [x] Identify technical constraints
-- [x] Define system actors
-- [x] Define role-based permissions (basis for FR-13)
-- [x] Detect ambiguities in the document
+- [x] Descomponer FR-01 a FR-13
+- [x] Identificar reglas explicitas e implicitas
+- [x] Identificar restricciones tecnicas
+- [x] Definir actores del sistema
+- [x] Definir permisos por rol (base para FR-13)
+- [x] Detectar ambiguedades en el documento
 
-🔹 Domain Modeling
+🔹 Modelado del Dominio
 
-- [x] Identify main entities
-- [x] Define mandatory attributes per entity
-- [x] Define relationships (1:N, N:M)
-- [x] Model Request entity
-- [x] Model User entity
-- [x] Model Assignee entity
-- [x] Model RequestHistory entity
-- [x] Model RequestStatus enum
-- [x] Model Priority enum
-- [x] Define domain invariants
+- [x] Identificar entidades principales
+- [x] Definir atributos obligatorios por entidad
+- [x] Definir relaciones (1:N, N:M)
+- [x] Modelar entidad Solicitud
+- [x] Modelar entidad Usuario
+- [x] Modelar entidad Asignado
+- [x] Modelar entidad HistorialSolicitud
+- [x] Modelar enum EstadoSolicitud
+- [x] Modelar enum Prioridad
+- [x] Definir invariantes del dominio
 
-🔹 Lifecycle Modeling (FR-04)
+🔹 Modelado del Ciclo de Vida (FR-04)
 
-Define states:
+Definir estados:
 
-- [x] Registered
-- [x] Classified
-- [x] In Progress
-- [x] Resolved
-- [x] Closed
-- [x] Define valid transitions
-- [x] Document invalid transitions
-- [x] Define business rules per transition
+- [x] Registrada
+- [x] Clasificada
+- [x] En Progreso
+- [x] Resuelta
+- [x] Cerrada
+- [x] Definir transiciones validas
+- [x] Documentar transiciones invalidas
+- [x] Definir reglas de negocio por transicion
 
-🔹 Prioritization (FR-03)
+🔹 Priorizacion (FR-03)
 
-- [x] Define academic impact criteria
-- [x] Define priority rules
-- [x] Document decision logic
-- [x] Define structure to justify priority
+- [x] Definir criterios de impacto academico
+- [x] Definir reglas de prioridad
+- [x] Documentar logica de decision
+- [x] Definir estructura para justificar prioridad
 
-🔹 Architecture Design
+🔹 Diseno de Arquitectura
 
-Define layered architecture:
+Definir arquitectura por capas:
 
 - [x] Controller
 - [x] Service
 - [x] Repository
 - [x] Domain
-- [x] Define main pattern
-- [x] Define decoupling strategies
-- [x] Define global exception handling
-- [x] Define validation strategy
+- [x] Definir patron principal
+- [x] Definir estrategias de desacoplamiento
+- [x] Definir manejo global de excepciones
+- [x] Definir estrategia de validacion
 
-🔹 REST API Design (FR-12)
+🔹 Diseno de REST API (FR-12)
 
-- [x] Define Request CRUD endpoints
-- [x] Define classification endpoint
-- [x] Define prioritization endpoint
-- [x] Define state change endpoint
-- [x] Define assignee assignment endpoint
-- [x] Define history endpoint
-- [x] Define query filters
-- [x] Define JSON request/response structure
-- [x] Define correct HTTP status codes
-- [x] Document API contract
+- [x] Definir endpoints CRUD de Solicitud
+- [x] Definir endpoint de clasificacion
+- [x] Definir endpoint de priorizacion
+- [x] Definir endpoint de cambio de estado
+- [x] Definir endpoint de asignacion de responsable
+- [x] Definir endpoint de historial
+- [x] Definir filtros de consulta
+- [x] Definir estructura JSON de request/response
+- [x] Definir codigos HTTP correctos
+- [x] Documentar contrato de API
 
-🔹 Base Security (FR-13)
+🔹 Seguridad Base (FR-13)
 
-Define roles:
+Definir roles:
 
-- [x] Student
-- [x] Administrative Staff
-- [x] Coordinator
-- [x] Map permissions to endpoints
+- [x] Estudiante
+- [x] Personal Administrativo
+- [x] Coordinador
+- [x] Mapear permisos a endpoints
 
-🔹 AI (Conceptual Design)
+🔹 IA (Diseno Conceptual)
 
-- [x] Define which AI FR will be implemented (09 or 10)
-- [x] Design integration point
-- [x] Ensure independence (FR-11)
+- [x] Definir que FR de IA se implementara (09 o 10)
+- [x] Disenar punto de integracion
+- [x] Asegurar independencia (FR-11)

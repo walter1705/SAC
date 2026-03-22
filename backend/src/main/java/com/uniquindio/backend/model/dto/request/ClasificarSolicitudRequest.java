@@ -17,7 +17,7 @@ public class ClasificarSolicitudRequest {
     @NotNull(message = "La prioridad es requerida")
     private Prioridad prioridad;
 
-    @NotBlank(message = "La justificación de prioridad es requerida")
-    @Size(min = 5, max = 500, message = "La justificación debe tener entre 5 y 500 caracteres")
-    private String justificacionPrioridad;
+    @NotBlank(message = "La nota de clasificación es requerida")
+    @Size(min = 5, max = 500, message = "La nota de clasificación debe tener entre 5 y 500 caracteres")
+    private String notaClasificacion;
 }

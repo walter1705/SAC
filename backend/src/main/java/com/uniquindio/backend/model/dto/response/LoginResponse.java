@@ -11,7 +11,7 @@ public class LoginResponse {
 
     private String token;
     private String tipo;
-    private String username;
+    private String nombreUsuario;
     private RolUsuario rol;
     private Integer expiraEn;
 }

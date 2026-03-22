@@ -1,200 +1,200 @@
-# General Scrum – Academic Triage System
+# Scrum General – Sistema de Triaje Academico
 
-📌 Project
+📌 Proyecto
 
-Academic Triage and Request Management System
+Sistema de Triaje Academico y Gestion de Solicitudes
 Stack: Spring Boot + Angular + REST API + ORM
-Methodology: Incremental Scrum in 3 MILESTONES (5 weeks each)
+Metodologia: Scrum incremental en 3 HITOS (5 semanas cada uno)
 
-✅ MILESTONE 1 – Design and Modeling (Weeks 1–5)
-Objective
+✅ HITO 1 – Diseno y Modelado (Semanas 1–5)
+Objetivo
 
-Define the system's architecture, domain, and contracts.
+Definir la arquitectura, el dominio y los contratos del sistema.
 
-Milestone Backlog
-🔹 Requirements Analysis
+Backlog del Hito
+🔹 Analisis de Requisitos
 
-- [x] Analyze all FRs from the document
-- [x] Identify system actors
-- [x] Define main use cases
-- [x] Validate project scope with the team
+- [x] Analizar todos los FR del documento
+- [x] Identificar actores del sistema
+- [x] Definir casos de uso principales
+- [x] Validar alcance del proyecto con el equipo
 
-🔹 Domain Modeling
+🔹 Modelado del Dominio
 
-- [x] Create UML class diagram
-- [x] Model Request entity
-- [x] Model User / Assignee entity
-- [x] Model Request History
-- [x] Model Lifecycle States
+- [x] Crear diagrama de clases UML
+- [x] Modelar entidad Solicitud
+- [x] Modelar entidad Usuario / Asignado
+- [x] Modelar Historial de Solicitud
+- [x] Modelar Estados del Ciclo de Vida
 
-🔹 Architecture Design
+🔹 Diseno de Arquitectura
 
-- [x] Define layered architecture
-- [x] Design Spring Boot package structure
-- [x] Define ORM entities
-- [x] Design design patterns to use
-- [x] Define optional AI integration
+- [x] Definir arquitectura por capas
+- [x] Disenar estructura de paquetes de Spring Boot
+- [x] Definir entidades ORM
+- [x] Definir patrones de diseno a usar
+- [x] Definir integracion opcional de IA
 
-🔹 REST API Design
+🔹 Diseno de REST API
 
-- [x] Define endpoints for FR-01 to FR-08
-- [x] Define JSON request/response
-- [x] Document API contracts
-- [x] Define HTTP status codes
+- [x] Definir endpoints para FR-01 a FR-08
+- [x] Definir JSON de request/response
+- [x] Documentar contratos de API
+- [x] Definir codigos de estado HTTP
 
-🔹 Internal Scrum
+🔹 Scrum Interno
 
-- [x] Weekly sprint planning
+- [x] Planificacion semanal de sprint
 - [x] Daily standups
-- [x] Model sprint review
-- [x] Retrospective
+- [x] Modelar sprint review
+- [x] Retrospectiva
 
-✔ Milestone 1 Deliverables
+✔ Entregables del Hito 1
 
-- [x] Complete UML
-- [x] Architecture design
-- [x] API document
-- [x] Refined Milestone 2 backlog
+- [x] UML completo
+- [x] Diseno de arquitectura
+- [x] Documento de API
+- [x] Backlog refinado del Hito 2
 
-✅ MILESTONE 2 – Backend and Logic (Weeks 6–10)
-Objective
+✅ HITO 2 – Backend y Logica (Semanas 6–10)
+Objetivo
 
-Implement a functional backend with Spring Boot.
+Implementar un backend funcional con Spring Boot.
 
-Milestone Backlog
-🔹 Base Configuration
+Backlog del Hito
+🔹 Configuracion Base
 
-- [x] Create Spring Boot project
-- [x] Configure database
-- [x] Configure ORM (JPA/Hibernate)
-- [x] Configure repositories
+- [x] Crear proyecto Spring Boot
+- [x] Configurar base de datos
+- [x] Configurar ORM (JPA/Hibernate)
+- [x] Configurar repositorios
 
-🔹 FR Implementation
+🔹 Implementacion de FR
 
-- [ ] FR-01 Request registration
-- [ ] FR-02 Request classification
-- [ ] FR-03 Rule-based prioritization
-- [ ] FR-04 State management
-- [ ] FR-05 Assignee assignment
-- [ ] FR-06 Auditable history
-- [ ] FR-07 Filter-based queries
-- [ ] FR-08 Request closure
+- [ ] FR-01 Registro de solicitudes
+- [ ] FR-02 Clasificacion de solicitudes
+- [ ] FR-03 Priorizacion basada en reglas
+- [ ] FR-04 Gestion de estados
+- [ ] FR-05 Asignacion de responsables
+- [ ] FR-06 Historial auditable
+- [ ] FR-07 Consultas con filtros
+- [ ] FR-08 Cierre de solicitudes
 
-🔹 Basic Security
+🔹 Seguridad Basica
 
-- [ ] User roles
-- [ ] Endpoint restrictions
-- [ ] Permission validation
+- [ ] Roles de usuario
+- [ ] Restricciones de endpoints
+- [ ] Validacion de permisos
 
 🔹 REST API
 
-- [ ] Implement controllers
-- [ ] Validate responses
-- [ ] Error handling
-- [ ] Basic API tests
+- [ ] Implementar controladores
+- [ ] Validar respuestas
+- [ ] Manejo de errores
+- [ ] Pruebas basicas de API
 
-🔹 Optional AI
+🔹 IA Opcional
 
-- [ ] Implement FR-09 or FR-10
-- [ ] Ensure operation without AI (FR-11)
+- [ ] Implementar FR-09 o FR-10
+- [ ] Garantizar funcionamiento sin IA (FR-11)
 
-🔹 Internal Scrum
+🔹 Scrum Interno
 
-- [ ] Backend sprint demos
-- [ ] Code reviews
-- [ ] Technical retrospective
+- [ ] Demos de sprint del backend
+- [ ] Revisiones de codigo
+- [ ] Retrospectiva tecnica
 
-✔ Milestone 2 Deliverables
+✔ Entregables del Hito 2
 
-- [ ] Functional backend
-- [ ] Operational REST API
-- [ ] Persistent database
-- [ ] Basic tests
+- [ ] Backend funcional
+- [ ] REST API operativa
+- [ ] Base de datos persistente
+- [ ] Pruebas basicas
 
-✅ MILESTONE 3 – Frontend and Security (Weeks 11–15)
-Objective
+✅ HITO 3 – Frontend y Seguridad (Semanas 11–15)
+Objetivo
 
-Develop Angular interface and integrate the entire system.
+Desarrollar la interfaz Angular e integrar todo el sistema.
 
-Milestone Backlog
-🔹 Angular Configuration
+Backlog del Hito
+🔹 Configuracion de Angular
 
-- [ ] Create Angular project
-- [ ] Configure routes
-- [ ] Configure API services
+- [ ] Crear proyecto Angular
+- [ ] Configurar rutas
+- [ ] Configurar servicios de API
 
 🔹 Interfaces
 
-- [ ] Request registration form
-- [ ] Classification/prioritization panel
-- [ ] Request history view
-- [ ] Assignees panel
-- [ ] Request search
-- [ ] Request status view
+- [ ] Formulario de registro de solicitudes
+- [ ] Panel de clasificacion/priorizacion
+- [ ] Vista de historial de solicitudes
+- [ ] Panel de responsables
+- [ ] Busqueda de solicitudes
+- [ ] Vista de estado de solicitudes
 
-🔹 Security
+🔹 Seguridad
 
-- [ ] JWT authentication
-- [ ] Role-based authorization
-- [ ] Route protection
+- [ ] Autenticacion JWT
+- [ ] Autorizacion por roles
+- [ ] Proteccion de rutas
 
-🔹 Full Integration
+🔹 Integracion Completa
 
-- [ ] Connect frontend with backend
-- [ ] Validate complete flows
-- [ ] Functional tests
-- [ ] UI error handling
+- [ ] Conectar frontend con backend
+- [ ] Validar flujos completos
+- [ ] Pruebas funcionales
+- [ ] Manejo de errores en UI
 
-🔹 Deployment
+🔹 Despliegue
 
-- [ ] Prepare production environment
-- [ ] Optional Docker
-- [ ] Deploy to server
-- [ ] Technical documentation
+- [ ] Preparar entorno de produccion
+- [ ] Docker opcional
+- [ ] Desplegar en servidor
+- [ ] Documentacion tecnica
 
-🔹 Internal Scrum
+🔹 Scrum Interno
 
-- [ ] Final sprint demo
-- [ ] QA testing
-- [ ] Final retrospective
+- [ ] Demo final de sprint
+- [ ] Pruebas QA
+- [ ] Retrospectiva final
 
-✔ Milestone 3 Deliverables
+✔ Entregables del Hito 3
 
-- [ ] Fully functional system
-- [ ] Security implemented
-- [ ] Deployment ready
-- [ ] Final documentation
+- [ ] Sistema totalmente funcional
+- [ ] Seguridad implementada
+- [ ] Despliegue listo
+- [ ] Documentacion final
 
-📊 General Functional Requirements Checklist
+📊 Lista General de Requisitos Funcionales
 
-- [ ] FR-01 Request registration
-- [ ] FR-02 Classification
-- [ ] FR-03 Prioritization
-- [ ] FR-04 State management
-- [ ] FR-05 Assignee assignment
-- [ ] FR-06 Auditable history
-- [ ] FR-07 Query
-- [ ] FR-08 Request closure
-- [ ] FR-09 AI summary (optional)
-- [ ] FR-10 AI suggestion (optional)
-- [ ] FR-11 Works without AI
+- [ ] FR-01 Registro de solicitudes
+- [ ] FR-02 Clasificacion
+- [ ] FR-03 Priorizacion
+- [ ] FR-04 Gestion de estados
+- [ ] FR-05 Asignacion de responsables
+- [ ] FR-06 Historial auditable
+- [ ] FR-07 Consulta
+- [ ] FR-08 Cierre de solicitudes
+- [ ] FR-09 Resumen con IA (opcional)
+- [ ] FR-10 Sugerencia con IA (opcional)
+- [ ] FR-11 Funciona sin IA
 - [ ] FR-12 REST API
-- [ ] FR-13 Basic authorization
+- [ ] FR-13 Autorizacion basica
 
-📅 Standard Weekly Scrum
+📅 Scrum Semanal Estandar
 
 - [ ] Sprint Planning
 - [ ] Daily Standup
 - [ ] Sprint Review
-- [ ] Retrospective
-- [ ] Update backlog
-- [ ] Update documentation
+- [ ] Retrospectiva
+- [ ] Actualizar backlog
+- [ ] Actualizar documentacion
 
-📌 Definition of Done (DoD)
+📌 Definicion de Hecho (DoD)
 
-- [ ] Code tested
-- [ ] API documented
-- [ ] No critical errors
-- [ ] Reviewed by team
-- [ ] Functionality demonstrated
-- [ ] Integrated into the system
+- [ ] Codigo probado
+- [ ] API documentada
+- [ ] Sin errores criticos
+- [ ] Revisado por el equipo
+- [ ] Funcionalidad demostrada
+- [ ] Integrado al sistema

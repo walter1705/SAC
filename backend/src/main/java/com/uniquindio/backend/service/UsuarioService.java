@@ -30,14 +30,14 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByUsername(request.getUsername())
+        Usuario usuario = usuarioRepository.findByNombreUsuario(request.getNombreUsuario())
                 .orElseThrow(() -> new UnauthorizedException("Nombre de usuario o contraseña inválidos"));
 
         if (!usuario.getActivo()) {
             throw new UnauthorizedException("La cuenta de usuario está desactivada");
         }
 
-        BCrypt.Result result = BCrypt.verifyer().verify(request.getPassword().toCharArray(), usuario.getPassword());
+        BCrypt.Result result = BCrypt.verifyer().verify(request.getContrasena().toCharArray(), usuario.getContrasena());
         if (!result.verified) {
             throw new UnauthorizedException("Nombre de usuario o contraseña inválidos");
         }
@@ -47,7 +47,7 @@ public class UsuarioService {
         return LoginResponse.builder()
                 .token(token)
                 .tipo("Bearer")
-                .username(usuario.getUsername())
+                .nombreUsuario(usuario.getNombreUsuario())
                 .rol(usuario.getRol())
                 .expiraEn(3600)
                 .build();
@@ -62,18 +62,23 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse crearUsuario(CrearUsuarioRequest request) {
-        if (usuarioRepository.existsByUsername(request.getUsername())) {
-            throw new BadRequestException("El nombre de usuario ya existe: " + request.getUsername());
+        if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
+            throw new BadRequestException("El nombre de usuario ya existe: " + request.getNombreUsuario());
         }
 
-        String hashedPassword = BCrypt.withDefaults().hashToString(12, request.getPassword().toCharArray());
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("El email ya existe: " + request.getEmail());
+        }
+
+        String hashedPassword = BCrypt.withDefaults().hashToString(12, request.getContrasena().toCharArray());
 
         Usuario usuario = Usuario.builder()
-                .username(request.getUsername())
-                .password(hashedPassword)
+                .nombreCompleto(request.getNombreCompleto())
+                .nombreUsuario(request.getNombreUsuario())
+                .contrasena(hashedPassword)
+                .email(request.getEmail())
                 .rol(request.getRol())
                 .activo(true)
-                .nombre(request.getNombre())
                 .build();
 
         Usuario saved = usuarioRepository.save(usuario);
@@ -97,18 +102,19 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Usuario findByUsername(String username) {
-        return usuarioRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + username));
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado: " + nombreUsuario));
     }
 
     private UsuarioResponse toResponse(Usuario usuario) {
         return UsuarioResponse.builder()
                 .id(usuario.getId())
-                .username(usuario.getUsername())
+                .nombreCompleto(usuario.getNombreCompleto())
+                .nombreUsuario(usuario.getNombreUsuario())
+                .email(usuario.getEmail())
                 .rol(usuario.getRol())
                 .activo(usuario.getActivo())
-                .nombre(usuario.getNombre())
                 .build();
     }
 }

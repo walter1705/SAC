@@ -18,11 +18,17 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 100)
+    private String nombreCompleto;
+
     @Column(nullable = false, unique = true, length = 50)
-    private String username;
+    private String nombreUsuario;
 
     @Column(nullable = false, length = 100)
-    private String password;
+    private String contrasena;
+
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -31,7 +37,4 @@ public class Usuario {
     @Builder.Default
     @Column(nullable = false)
     private Boolean activo = true;
-
-    @Column(nullable = false, length = 100)
-    private String nombre;
 }

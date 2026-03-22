@@ -34,10 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = extractTokenFromRequest(request);
 
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
-            String username = jwtUtil.getUsernameFromToken(token);
+            String nombreUsuario = jwtUtil.getNombreUsuarioFromToken(token);
             String rol = jwtUtil.getRolFromToken(token);
 
-            Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+            Optional<Usuario> usuarioOpt = usuarioRepository.findByNombreUsuario(nombreUsuario);
 
             if (usuarioOpt.isPresent() && usuarioOpt.get().getActivo()) {
                 Usuario usuario = usuarioOpt.get();

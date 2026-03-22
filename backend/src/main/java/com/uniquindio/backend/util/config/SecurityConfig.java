@@ -33,7 +33,7 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/login").permitAll()
                 // Swagger/OpenAPI endpoints
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/openapi.yaml").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/openapi.yaml", "/swagger-ui.html").permitAll()
                 // Usuario endpoints - ADMINISTRADOR only
                 .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").hasRole("ADMINISTRADOR")

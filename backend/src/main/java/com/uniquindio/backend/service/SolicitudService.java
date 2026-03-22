@@ -38,19 +38,22 @@ public class SolicitudService {
     );
 
     @Transactional
-    public SolicitudResponse crearSolicitud(CrearSolicitudRequest request, String username) {
+    public SolicitudResponse crearSolicitud(CrearSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = Solicitud.builder()
-                .tipo(request.getTipo())
+                .estudianteNombre(request.getEstudianteNombre())
+                .estudianteCorreo(request.getEstudianteCorreo())
+                .estudianteTelefono(request.getEstudianteTelefono())
+                .estudianteIdentificacion(request.getEstudianteIdentificacion())
+                .asunto(request.getAsunto())
                 .descripcion(request.getDescripcion())
                 .canalOrigen(request.getCanalOrigen())
-                .idSolicitante(request.getIdSolicitante())
                 .estado(EstadoSolicitud.REGISTRADA)
                 .build();
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
         // Create audit history entry
-        registrarHistorial(saved, "REGISTRO", username, "Solicitud creada vía " + request.getCanalOrigen());
+        registrarHistorial(saved, "REGISTRO", nombreUsuario, "Solicitud creada vía " + request.getCanalOrigen());
 
         return toResponse(saved);
     }
@@ -85,7 +88,7 @@ public class SolicitudService {
     }
 
     @Transactional
-    public SolicitudResponse clasificarSolicitud(Long id, ClasificarSolicitudRequest request, String username) {
+    public SolicitudResponse clasificarSolicitud(Long id, ClasificarSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = findSolicitudById(id);
 
         if (solicitud.getEstado() == EstadoSolicitud.CERRADA) {
@@ -98,19 +101,19 @@ public class SolicitudService {
 
         solicitud.setTipo(request.getTipo());
         solicitud.setPrioridad(request.getPrioridad());
-        solicitud.setJustificacionPrioridad(request.getJustificacionPrioridad());
+        solicitud.setNotaClasificacion(request.getNotaClasificacion());
         solicitud.setEstado(EstadoSolicitud.CLASIFICADA);
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        registrarHistorial(saved, "CLASIFICACION", username,
+        registrarHistorial(saved, "CLASIFICACION", nombreUsuario,
                 "Clasificada como " + request.getTipo() + " con prioridad " + request.getPrioridad());
 
         return toResponse(saved);
     }
 
     @Transactional
-    public SolicitudResponse cambiarEstado(Long id, CambiarEstadoRequest request, String username) {
+    public SolicitudResponse cambiarEstado(Long id, CambiarEstadoRequest request, String nombreUsuario) {
         Solicitud solicitud = findSolicitudById(id);
 
         if (solicitud.getEstado() == EstadoSolicitud.CERRADA) {
@@ -126,22 +129,22 @@ public class SolicitudService {
         solicitud.setEstado(request.getNuevoEstado());
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        String observacion = request.getObservacion() != null ? request.getObservacion() : 
+        String nota = request.getNota() != null ? request.getNota() :
                 "Estado cambiado a " + request.getNuevoEstado();
-        registrarHistorial(saved, "CAMBIO_ESTADO", username, observacion);
+        registrarHistorial(saved, "CAMBIO_ESTADO", nombreUsuario, nota);
 
         return toResponse(saved);
     }
 
     @Transactional
-    public AsignacionResponse asignarResponsable(Long solicitudId, AsignarResponsableRequest request, String username) {
+    public AsignacionResponse asignarResponsable(Long solicitudId, AsignarResponsableRequest request, String nombreUsuario) {
         Solicitud solicitud = findSolicitudById(solicitudId);
 
         if (solicitud.getEstado() == EstadoSolicitud.CERRADA) {
             throw new BadRequestException("No se puede asignar responsable a una solicitud cerrada");
         }
 
-        Usuario usuario = usuarioService.findById(request.getUsuarioId());
+        Usuario usuario = usuarioService.findById(request.getResponsableId());
 
         if (!usuario.getActivo()) {
             throw new BadRequestException("No se puede asignar un usuario inactivo");
@@ -162,7 +165,10 @@ public class SolicitudService {
 
         Asignacion saved = asignacionRepository.save(asignacion);
 
-        registrarHistorial(solicitud, "ASIGNACION", username, "Asignada a " + usuario.getUsername() + " para gestión");
+        String mensajeHistorial = request.getNotaAsignacion() != null
+                ? request.getNotaAsignacion()
+                : "Asignada a " + usuario.getNombreUsuario() + " para gestión";
+        registrarHistorial(solicitud, "ASIGNACION", nombreUsuario, mensajeHistorial);
 
         return AsignacionResponse.builder()
                 .id(saved.getId())
@@ -174,7 +180,7 @@ public class SolicitudService {
     }
 
     @Transactional
-    public SolicitudResponse cerrarSolicitud(Long id, CerrarSolicitudRequest request, String username) {
+    public SolicitudResponse cerrarSolicitud(Long id, CerrarSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = findSolicitudById(id);
 
         if (solicitud.getEstado() != EstadoSolicitud.ATENDIDA) {
@@ -183,11 +189,16 @@ public class SolicitudService {
         }
 
         solicitud.setEstado(EstadoSolicitud.CERRADA);
-        solicitud.setObservacionCierre(request.getObservacionCierre());
+        solicitud.setResolucion(request.getResolucion());
+        solicitud.setNotasCierre(request.getNotasCierre());
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        registrarHistorial(saved, "CIERRE", username, request.getObservacionCierre());
+        String mensajeHistorial = request.getResolucion();
+        if (request.getNotasCierre() != null) {
+            mensajeHistorial += " - " + request.getNotasCierre();
+        }
+        registrarHistorial(saved, "CIERRE", nombreUsuario, mensajeHistorial);
 
         return toResponse(saved);
     }
@@ -207,11 +218,11 @@ public class SolicitudService {
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud con ID " + id + " no encontrada"));
     }
 
-    private void registrarHistorial(Solicitud solicitud, String accion, String username, String observaciones) {
+    private void registrarHistorial(Solicitud solicitud, String accion, String nombreUsuario, String observaciones) {
         Historial historial = Historial.builder()
                 .solicitud(solicitud)
                 .accion(accion)
-                .usuarioResponsable(username)
+                .usuarioResponsable(nombreUsuario)
                 .observaciones(observaciones)
                 .build();
         historialRepository.save(historial);
@@ -220,15 +231,20 @@ public class SolicitudService {
     private SolicitudResponse toResponse(Solicitud solicitud) {
         return SolicitudResponse.builder()
                 .id(solicitud.getId())
-                .tipo(solicitud.getTipo())
+                .estudianteNombre(solicitud.getEstudianteNombre())
+                .estudianteCorreo(solicitud.getEstudianteCorreo())
+                .estudianteTelefono(solicitud.getEstudianteTelefono())
+                .estudianteIdentificacion(solicitud.getEstudianteIdentificacion())
+                .asunto(solicitud.getAsunto())
                 .descripcion(solicitud.getDescripcion())
                 .canalOrigen(solicitud.getCanalOrigen())
                 .fechaHoraRegistro(solicitud.getFechaHoraRegistro())
-                .idSolicitante(solicitud.getIdSolicitante())
+                .tipo(solicitud.getTipo())
                 .prioridad(solicitud.getPrioridad())
-                .justificacionPrioridad(solicitud.getJustificacionPrioridad())
+                .notaClasificacion(solicitud.getNotaClasificacion())
                 .estado(solicitud.getEstado())
-                .observacionCierre(solicitud.getObservacionCierre())
+                .resolucion(solicitud.getResolucion())
+                .notasCierre(solicitud.getNotasCierre())
                 .build();
     }
 
