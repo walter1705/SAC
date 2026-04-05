@@ -91,7 +91,7 @@ bun run lint
 
 ### Architecture
 
-Next.js App Router. Currently in early stage — `app/` only has `layout.tsx`, `page.tsx`, and `globals.css`. API base URL configured via `NEXT_PUBLIC_API_URL=http://localhost:8080/api`.
+Next.js App Router. Currently in early stage — `app/` only has `layout.tsx`, `page.tsx`, and `globals.css`. API base URL configured via `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`.
 
 ---
 
