@@ -1,6 +1,6 @@
 export function formatFecha(iso: string): string {
   const date = new Date(iso)
-  return date.toLocaleDateString('es-CO', {
+  return date.toLocaleString('es-CO', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

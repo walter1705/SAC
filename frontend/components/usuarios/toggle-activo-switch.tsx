@@ -15,9 +15,11 @@ export function ToggleActivoSwitch({ userId, nombreCompleto, activo }: Props) {
   const [showConfirm, setShowConfirm] = useState(false)
   const mutation = useCambiarEstadoUsuario()
 
-  const handleToggle = () => {
-    if (activo) {
+  const handleToggle = (checked: boolean) => {
+    if (!checked) {
       setShowConfirm(true)
+    } else {
+      mutation.mutate({ id: userId, body: { activo: true } })
     }
   }
 

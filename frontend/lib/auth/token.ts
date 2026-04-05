@@ -5,8 +5,9 @@ const AUTH_COOKIE = 'sac_auth'
 
 export function decodeToken(token: string): TokenPayload | null {
   try {
-    const payload = token.split('.')[1]
-    return JSON.parse(atob(payload))
+    const raw = token.split('.')[1]
+    const base64 = raw.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(raw.length / 4) * 4, '=')
+    return JSON.parse(atob(base64))
   } catch {
     return null
   }
