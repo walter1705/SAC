@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,11 +28,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(Customizer.withDefaults())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/login").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Swagger/OpenAPI endpoints
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/openapi.yaml", "/swagger-ui.html").permitAll()
                 // Usuario endpoints - ADMINISTRADOR only
