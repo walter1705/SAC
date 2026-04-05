@@ -33,7 +33,8 @@ export function getStoredToken(): string | null {
 export function setStoredToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token)
   // Set cookie mirror for middleware
-  document.cookie = `${AUTH_COOKIE}=1; path=/; max-age=${60 * 60}; SameSite=Lax`
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${AUTH_COOKIE}=1; path=/; max-age=${60 * 60}; SameSite=Lax${secure}`
 }
 
 export function removeStoredToken(): void {
