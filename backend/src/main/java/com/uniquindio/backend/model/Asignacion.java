@@ -6,7 +6,9 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "asignaciones")
+@Table(name = "asignaciones", indexes = {
+    @Index(name = "idx_asignacion_solicitud_activa", columnList = "solicitud_id, activa")
+})
 @Getter
 @Setter
 @NoArgsConstructor

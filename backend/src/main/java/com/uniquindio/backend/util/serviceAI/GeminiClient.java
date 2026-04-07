@@ -27,12 +27,13 @@ public class GeminiClient {
     public GeminiClient(
             @Value("${google.ai.api-key}") String apiKey,
             @Value("${google.ai.model}") String model,
-            @Value("${google.ai.temperature:0.7}") double temperature) {
+            @Value("${google.ai.temperature:0.7}") double temperature,
+            ObjectMapper objectMapper) {
         this.apiKey = apiKey;
         this.model = model;
         this.temperature = temperature;
         this.restClient = RestClient.create();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     public String generarContenido(String prompt) {

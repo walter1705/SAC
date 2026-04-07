@@ -4,19 +4,19 @@ import com.uniquindio.backend.model.Usuario;
 import com.uniquindio.backend.model.enums.RolUsuario;
 import com.uniquindio.backend.repository.UsuarioRepository;
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
 @Profile("!test")
+@RequiredArgsConstructor
+@Slf4j
 public class DataSeeder implements CommandLineRunner {
 
     private final UsuarioRepository usuarioRepository;
-
-    public DataSeeder(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
-    }
 
     @Override
     public void run(String... args) {
@@ -33,7 +33,7 @@ public class DataSeeder implements CommandLineRunner {
                     .build();
 
             usuarioRepository.save(admin);
-            System.out.println("====== USUARIO ADMIN CREADO (admin / admin123) ======");
+            log.info("Usuario ADMIN creado (admin / admin123)");
         }
 
         if (usuarioRepository.findByNombreUsuario("gestor").isEmpty()) {
@@ -49,7 +49,7 @@ public class DataSeeder implements CommandLineRunner {
                     .build();
 
             usuarioRepository.save(gestor);
-            System.out.println("====== USUARIO GESTOR CREADO (gestor / gestor123) ======");
+            log.info("Usuario GESTOR creado (gestor / gestor123)");
         }
     }
 }

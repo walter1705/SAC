@@ -20,6 +20,7 @@ class JwtUtilTest {
         jwtUtil = new JwtUtil();
         ReflectionTestUtils.setField(jwtUtil, "jwtSecret", "SAC_Sistema_Atencion_Clasificacion_SecretKey_2026_UniqueKey");
         ReflectionTestUtils.setField(jwtUtil, "jwtExpiration", 3600000L);
+        jwtUtil.init();
 
         testUsuario = Usuario.builder()
                 .id(1L)
@@ -153,6 +154,7 @@ class JwtUtilTest {
             ReflectionTestUtils.setField(jwtUtilConExpiracionCorta, "jwtSecret",
                     "SAC_Sistema_Atencion_Clasificacion_SecretKey_2026_UniqueKey");
             ReflectionTestUtils.setField(jwtUtilConExpiracionCorta, "jwtExpiration", -1000L);
+            jwtUtilConExpiracionCorta.init();
 
             String token = jwtUtilConExpiracionCorta.generateToken(testUsuario);
 
@@ -199,6 +201,7 @@ class JwtUtilTest {
             JwtUtil jwtUtilConClaveCorta = new JwtUtil();
             ReflectionTestUtils.setField(jwtUtilConClaveCorta, "jwtSecret", "short");
             ReflectionTestUtils.setField(jwtUtilConClaveCorta, "jwtExpiration", 3600000L);
+            jwtUtilConClaveCorta.init();
 
             String token = jwtUtilConClaveCorta.generateToken(testUsuario);
 

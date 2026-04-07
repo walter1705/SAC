@@ -4,6 +4,7 @@ import com.uniquindio.backend.model.enums.CanalOrigen;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CrearSolicitudRequest(
@@ -19,6 +20,7 @@ public record CrearSolicitudRequest(
 
         @NotBlank(message = "El teléfono del estudiante es requerido")
         @Size(min = 7, max = 20, message = "El teléfono debe tener entre 7 y 20 caracteres")
+        @Pattern(regexp = "^[0-9+\\-\\s()]{7,20}$", message = "El teléfono solo puede contener dígitos, +, -, espacios y paréntesis")
         String estudianteTelefono,
 
         @NotBlank(message = "La identificación del estudiante es requerida")
