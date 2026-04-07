@@ -27,7 +27,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,9 +65,7 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Login exitoso con credenciales validas")
         void login_conCredencialesValidas_retornaToken() {
-            LoginRequest request = new LoginRequest();
-            request.setNombreUsuario("jperez");
-            request.setContrasena("password123");
+            LoginRequest request = new LoginRequest("jperez", "password123");
 
             when(usuarioRepository.findByNombreUsuario("jperez")).thenReturn(Optional.of(testUsuario));
             when(jwtUtil.generateToken(testUsuario)).thenReturn("test-jwt-token");
@@ -76,19 +73,17 @@ class UsuarioServiceTest {
             LoginResponse response = usuarioService.login(request);
 
             assertThat(response).isNotNull();
-            assertThat(response.getToken()).isEqualTo("test-jwt-token");
-            assertThat(response.getTipo()).isEqualTo("Bearer");
-            assertThat(response.getNombreUsuario()).isEqualTo("jperez");
-            assertThat(response.getRol()).isEqualTo(RolUsuario.GESTOR);
-            assertThat(response.getExpiraEn()).isEqualTo(3600);
+            assertThat(response.token()).isEqualTo("test-jwt-token");
+            assertThat(response.tipo()).isEqualTo("Bearer");
+            assertThat(response.nombreUsuario()).isEqualTo("jperez");
+            assertThat(response.rol()).isEqualTo(RolUsuario.GESTOR);
+            assertThat(response.expiraEn()).isEqualTo(3600);
         }
 
         @Test
         @DisplayName("Login falla con usuario no encontrado")
         void login_conUsuarioNoEncontrado_lanzaUnauthorizedException() {
-            LoginRequest request = new LoginRequest();
-            request.setNombreUsuario("noexiste");
-            request.setContrasena("password123");
+            LoginRequest request = new LoginRequest("noexiste", "password123");
 
             when(usuarioRepository.findByNombreUsuario("noexiste")).thenReturn(Optional.empty());
 
@@ -100,9 +95,7 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Login falla con contrasena incorrecta")
         void login_conContrasenaIncorrecta_lanzaUnauthorizedException() {
-            LoginRequest request = new LoginRequest();
-            request.setNombreUsuario("jperez");
-            request.setContrasena("wrongpassword");
+            LoginRequest request = new LoginRequest("jperez", "wrongpassword");
 
             when(usuarioRepository.findByNombreUsuario("jperez")).thenReturn(Optional.of(testUsuario));
 
@@ -115,9 +108,7 @@ class UsuarioServiceTest {
         @DisplayName("Login falla con usuario inactivo")
         void login_conUsuarioInactivo_lanzaUnauthorizedException() {
             testUsuario.setActivo(false);
-            LoginRequest request = new LoginRequest();
-            request.setNombreUsuario("jperez");
-            request.setContrasena("password123");
+            LoginRequest request = new LoginRequest("jperez", "password123");
 
             when(usuarioRepository.findByNombreUsuario("jperez")).thenReturn(Optional.of(testUsuario));
 
@@ -148,8 +139,8 @@ class UsuarioServiceTest {
             List<UsuarioResponse> usuarios = usuarioService.listarUsuariosActivos();
 
             assertThat(usuarios).hasSize(2);
-            assertThat(usuarios.get(0).getNombreUsuario()).isEqualTo("jperez");
-            assertThat(usuarios.get(1).getNombreUsuario()).isEqualTo("mgarcia");
+            assertThat(usuarios.get(0).nombreUsuario()).isEqualTo("jperez");
+            assertThat(usuarios.get(1).nombreUsuario()).isEqualTo("mgarcia");
         }
 
         @Test
@@ -170,12 +161,9 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Crea usuario exitosamente")
         void crearUsuario_conDatosValidos_retornaUsuarioResponse() {
-            CrearUsuarioRequest request = new CrearUsuarioRequest();
-            request.setNombreCompleto("Nuevo Usuario");
-            request.setNombreUsuario("nusuario");
-            request.setContrasena("password123");
-            request.setEmail("nusuario@test.com");
-            request.setRol(RolUsuario.GESTOR);
+            CrearUsuarioRequest request = new CrearUsuarioRequest(
+                    "Nuevo Usuario", "nusuario", "password123", "nusuario@test.com", RolUsuario.GESTOR
+            );
 
             when(usuarioRepository.existsByNombreUsuario("nusuario")).thenReturn(false);
             when(usuarioRepository.existsByEmail("nusuario@test.com")).thenReturn(false);
@@ -188,12 +176,12 @@ class UsuarioServiceTest {
             UsuarioResponse response = usuarioService.crearUsuario(request);
 
             assertThat(response).isNotNull();
-            assertThat(response.getId()).isEqualTo(3L);
-            assertThat(response.getNombreCompleto()).isEqualTo("Nuevo Usuario");
-            assertThat(response.getNombreUsuario()).isEqualTo("nusuario");
-            assertThat(response.getEmail()).isEqualTo("nusuario@test.com");
-            assertThat(response.getRol()).isEqualTo(RolUsuario.GESTOR);
-            assertThat(response.getActivo()).isTrue();
+            assertThat(response.id()).isEqualTo(3L);
+            assertThat(response.nombreCompleto()).isEqualTo("Nuevo Usuario");
+            assertThat(response.nombreUsuario()).isEqualTo("nusuario");
+            assertThat(response.email()).isEqualTo("nusuario@test.com");
+            assertThat(response.rol()).isEqualTo(RolUsuario.GESTOR);
+            assertThat(response.activo()).isTrue();
 
             verify(usuarioRepository).save(any(Usuario.class));
         }
@@ -201,9 +189,7 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Falla al crear usuario con nombre de usuario duplicado")
         void crearUsuario_conNombreUsuarioDuplicado_lanzaBadRequestException() {
-            CrearUsuarioRequest request = new CrearUsuarioRequest();
-            request.setNombreUsuario("jperez");
-            request.setEmail("nuevo@test.com");
+            CrearUsuarioRequest request = new CrearUsuarioRequest(null, "jperez", null, "nuevo@test.com", null);
 
             when(usuarioRepository.existsByNombreUsuario("jperez")).thenReturn(true);
 
@@ -215,9 +201,7 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Falla al crear usuario con email duplicado")
         void crearUsuario_conEmailDuplicado_lanzaBadRequestException() {
-            CrearUsuarioRequest request = new CrearUsuarioRequest();
-            request.setNombreUsuario("nuevouser");
-            request.setEmail("jperez@test.com");
+            CrearUsuarioRequest request = new CrearUsuarioRequest(null, "nuevouser", null, "jperez@test.com", null);
 
             when(usuarioRepository.existsByNombreUsuario("nuevouser")).thenReturn(false);
             when(usuarioRepository.existsByEmail("jperez@test.com")).thenReturn(true);
@@ -235,8 +219,7 @@ class UsuarioServiceTest {
         @Test
         @DisplayName("Desactiva usuario exitosamente")
         void cambiarEstadoUsuario_desactivar_retornaUsuarioInactivo() {
-            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest();
-            request.setActivo(false);
+            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest(false);
 
             when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUsuario));
             when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -244,7 +227,7 @@ class UsuarioServiceTest {
             UsuarioResponse response = usuarioService.cambiarEstadoUsuario(1L, request);
 
             assertThat(response).isNotNull();
-            assertThat(response.getActivo()).isFalse();
+            assertThat(response.activo()).isFalse();
             verify(usuarioRepository).save(testUsuario);
         }
 
@@ -252,8 +235,7 @@ class UsuarioServiceTest {
         @DisplayName("Activa usuario exitosamente")
         void cambiarEstadoUsuario_activar_retornaUsuarioActivo() {
             testUsuario.setActivo(false);
-            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest();
-            request.setActivo(true);
+            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest(true);
 
             when(usuarioRepository.findById(1L)).thenReturn(Optional.of(testUsuario));
             when(usuarioRepository.save(any(Usuario.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -261,14 +243,13 @@ class UsuarioServiceTest {
             UsuarioResponse response = usuarioService.cambiarEstadoUsuario(1L, request);
 
             assertThat(response).isNotNull();
-            assertThat(response.getActivo()).isTrue();
+            assertThat(response.activo()).isTrue();
         }
 
         @Test
         @DisplayName("Falla al cambiar estado de usuario no encontrado")
         void cambiarEstadoUsuario_usuarioNoEncontrado_lanzaResourceNotFoundException() {
-            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest();
-            request.setActivo(false);
+            CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest(false);
 
             when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
 

@@ -26,13 +26,13 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(401)
-                .error("No Autorizado")
-                .message("Se requiere autenticación completa para acceder a este recurso")
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                401,
+                "No Autorizado",
+                "Se requiere autenticación completa para acceder a este recurso",
+                request.getRequestURI()
+        );
 
         objectMapper.findAndRegisterModules();
         objectMapper.writeValue(response.getOutputStream(), error);

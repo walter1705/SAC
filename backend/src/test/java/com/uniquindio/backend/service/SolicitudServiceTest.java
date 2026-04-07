@@ -27,6 +27,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,14 +83,15 @@ class SolicitudServiceTest {
         @Test
         @DisplayName("Crea solicitud exitosamente")
         void crearSolicitud_conDatosValidos_retornaSolicitudResponse() {
-            CrearSolicitudRequest request = new CrearSolicitudRequest();
-            request.setEstudianteNombre("Pedro Estudiante");
-            request.setEstudianteCorreo("pedro@uni.edu.co");
-            request.setEstudianteTelefono("3001234567");
-            request.setEstudianteIdentificacion("12345678");
-            request.setAsunto("Solicitud de homologacion");
-            request.setDescripcion("Necesito homologar materias del programa anterior");
-            request.setCanalOrigen(CanalOrigen.WEB);
+            CrearSolicitudRequest request = new CrearSolicitudRequest(
+                    "Pedro Estudiante",
+                    "pedro@uni.edu.co",
+                    "3001234567",
+                    "12345678",
+                    "Solicitud de homologacion",
+                    "Necesito homologar materias del programa anterior",
+                    CanalOrigen.WEB
+            );
 
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> {
                 Solicitud saved = invocation.getArgument(0);
@@ -101,9 +103,9 @@ class SolicitudServiceTest {
             SolicitudResponse response = solicitudService.crearSolicitud(request, "admin");
 
             assertThat(response).isNotNull();
-            assertThat(response.getId()).isEqualTo(1L);
-            assertThat(response.getEstudianteNombre()).isEqualTo("Pedro Estudiante");
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.REGISTRADA);
+            assertThat(response.id()).isEqualTo(1L);
+            assertThat(response.estudianteNombre()).isEqualTo("Pedro Estudiante");
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.REGISTRADA);
 
             verify(solicitudRepository).save(any(Solicitud.class));
             verify(historialRepository).save(any(Historial.class));
@@ -128,9 +130,9 @@ class SolicitudServiceTest {
                     EstadoSolicitud.REGISTRADA, null, null, null, pageable);
 
             assertThat(response).isNotNull();
-            assertThat(response.getContent()).hasSize(1);
-            assertThat(response.getTotalElementos()).isEqualTo(1);
-            assertThat(response.getPagina()).isEqualTo(0);
+            assertThat(response.content()).hasSize(1);
+            assertThat(response.totalElementos()).isEqualTo(1);
+            assertThat(response.pagina()).isEqualTo(0);
         }
 
         @Test
@@ -146,7 +148,7 @@ class SolicitudServiceTest {
                     null, null, null, null, pageable);
 
             assertThat(response).isNotNull();
-            assertThat(response.getContent()).hasSize(1);
+            assertThat(response.content()).hasSize(1);
         }
     }
 
@@ -162,8 +164,8 @@ class SolicitudServiceTest {
             SolicitudResponse response = solicitudService.obtenerPorId(1L);
 
             assertThat(response).isNotNull();
-            assertThat(response.getId()).isEqualTo(1L);
-            assertThat(response.getEstudianteNombre()).isEqualTo("Pedro Estudiante");
+            assertThat(response.id()).isEqualTo(1L);
+            assertThat(response.estudianteNombre()).isEqualTo("Pedro Estudiante");
         }
 
         @Test
@@ -184,10 +186,9 @@ class SolicitudServiceTest {
         @Test
         @DisplayName("Clasifica solicitud exitosamente")
         void clasificarSolicitud_conEstadoRegistrada_retornaSolicitudClasificada() {
-            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-            request.setTipo(TipoSolicitud.HOMOLOGACION);
-            request.setPrioridad(Prioridad.ALTA);
-            request.setNotaClasificacion("Solicitud prioritaria de homologacion");
+            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                    TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Solicitud prioritaria de homologacion"
+            );
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -195,9 +196,9 @@ class SolicitudServiceTest {
             SolicitudResponse response = solicitudService.clasificarSolicitud(1L, request, "admin");
 
             assertThat(response).isNotNull();
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.CLASIFICADA);
-            assertThat(response.getTipo()).isEqualTo(TipoSolicitud.HOMOLOGACION);
-            assertThat(response.getPrioridad()).isEqualTo(Prioridad.ALTA);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.CLASIFICADA);
+            assertThat(response.tipo()).isEqualTo(TipoSolicitud.HOMOLOGACION);
+            assertThat(response.prioridad()).isEqualTo(Prioridad.ALTA);
 
             verify(historialRepository).save(any(Historial.class));
         }
@@ -206,10 +207,9 @@ class SolicitudServiceTest {
         @DisplayName("Falla al clasificar solicitud no en estado REGISTRADA")
         void clasificarSolicitud_conEstadoNoRegistrada_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.CLASIFICADA);
-            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-            request.setTipo(TipoSolicitud.HOMOLOGACION);
-            request.setPrioridad(Prioridad.ALTA);
-            request.setNotaClasificacion("Nota de clasificacion");
+            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                    TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Nota de clasificacion"
+            );
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -222,10 +222,9 @@ class SolicitudServiceTest {
         @DisplayName("Falla al clasificar solicitud cerrada")
         void clasificarSolicitud_conEstadoCerrada_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.CERRADA);
-            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-            request.setTipo(TipoSolicitud.HOMOLOGACION);
-            request.setPrioridad(Prioridad.ALTA);
-            request.setNotaClasificacion("Nota de clasificacion");
+            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                    TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Nota de clasificacion"
+            );
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -243,9 +242,7 @@ class SolicitudServiceTest {
         @DisplayName("Cambia estado de CLASIFICADA a EN_ATENCION exitosamente")
         void cambiarEstado_transicionValida_retornaSolicitudConNuevoEstado() {
             testSolicitud.setEstado(EstadoSolicitud.CLASIFICADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
-            request.setNota("Iniciando atencion");
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.EN_ATENCION, "Iniciando atencion");
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -253,7 +250,7 @@ class SolicitudServiceTest {
             SolicitudResponse response = solicitudService.cambiarEstado(1L, request, "gestor");
 
             assertThat(response).isNotNull();
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.EN_ATENCION);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.EN_ATENCION);
 
             verify(historialRepository).save(any(Historial.class));
         }
@@ -262,8 +259,7 @@ class SolicitudServiceTest {
         @DisplayName("Falla con transicion de estado invalida")
         void cambiarEstado_transicionInvalida_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.REGISTRADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.CERRADA);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.CERRADA, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -276,8 +272,7 @@ class SolicitudServiceTest {
         @DisplayName("Falla al cambiar estado de solicitud cerrada")
         void cambiarEstado_solicitudCerrada_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.CERRADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.EN_ATENCION, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -290,9 +285,7 @@ class SolicitudServiceTest {
         @DisplayName("Cambia estado con nota por defecto cuando no se proporciona")
         void cambiarEstado_sinNota_usaNotaPorDefecto() {
             testSolicitud.setEstado(EstadoSolicitud.CLASIFICADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
-            request.setNota(null);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.EN_ATENCION, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -311,9 +304,7 @@ class SolicitudServiceTest {
         @Test
         @DisplayName("Asigna responsable exitosamente")
         void asignarResponsable_conDatosValidos_retornaAsignacionResponse() {
-            AsignarResponsableRequest request = new AsignarResponsableRequest();
-            request.setResponsableId(1L);
-            request.setNotaAsignacion("Asignacion urgente");
+            AsignarResponsableRequest request = new AsignarResponsableRequest(1L, "Asignacion urgente");
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(usuarioService.findById(1L)).thenReturn(testUsuario);
@@ -328,9 +319,9 @@ class SolicitudServiceTest {
             AsignacionResponse response = solicitudService.asignarResponsable(1L, request, "admin");
 
             assertThat(response).isNotNull();
-            assertThat(response.getSolicitudId()).isEqualTo(1L);
-            assertThat(response.getUsuarioId()).isEqualTo(1L);
-            assertThat(response.getActiva()).isTrue();
+            assertThat(response.solicitudId()).isEqualTo(1L);
+            assertThat(response.usuarioId()).isEqualTo(1L);
+            assertThat(response.activa()).isTrue();
         }
 
         @Test
@@ -343,8 +334,7 @@ class SolicitudServiceTest {
                     .activa(true)
                     .build();
 
-            AsignarResponsableRequest request = new AsignarResponsableRequest();
-            request.setResponsableId(2L);
+            AsignarResponsableRequest request = new AsignarResponsableRequest(2L, null);
 
             Usuario nuevoUsuario = Usuario.builder()
                     .id(2L)
@@ -373,8 +363,7 @@ class SolicitudServiceTest {
         @DisplayName("Falla al asignar usuario inactivo")
         void asignarResponsable_conUsuarioInactivo_lanzaBadRequestException() {
             testUsuario.setActivo(false);
-            AsignarResponsableRequest request = new AsignarResponsableRequest();
-            request.setResponsableId(1L);
+            AsignarResponsableRequest request = new AsignarResponsableRequest(1L, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(usuarioService.findById(1L)).thenReturn(testUsuario);
@@ -388,8 +377,7 @@ class SolicitudServiceTest {
         @DisplayName("Falla al asignar responsable a solicitud cerrada")
         void asignarResponsable_aSolicitudCerrada_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.CERRADA);
-            AsignarResponsableRequest request = new AsignarResponsableRequest();
-            request.setResponsableId(1L);
+            AsignarResponsableRequest request = new AsignarResponsableRequest(1L, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -407,9 +395,9 @@ class SolicitudServiceTest {
         @DisplayName("Cierra solicitud exitosamente")
         void cerrarSolicitud_conEstadoAtendida_retornaSolicitudCerrada() {
             testSolicitud.setEstado(EstadoSolicitud.ATENDIDA);
-            CerrarSolicitudRequest request = new CerrarSolicitudRequest();
-            request.setResolucion("Solicitud resuelta satisfactoriamente");
-            request.setNotasCierre("Se homologaron 3 materias");
+            CerrarSolicitudRequest request = new CerrarSolicitudRequest(
+                    "Solicitud resuelta satisfactoriamente", "Se homologaron 3 materias"
+            );
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -417,9 +405,9 @@ class SolicitudServiceTest {
             SolicitudResponse response = solicitudService.cerrarSolicitud(1L, request, "gestor");
 
             assertThat(response).isNotNull();
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.CERRADA);
-            assertThat(response.getResolucion()).isEqualTo("Solicitud resuelta satisfactoriamente");
-            assertThat(response.getNotasCierre()).isEqualTo("Se homologaron 3 materias");
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.CERRADA);
+            assertThat(response.resolucion()).isEqualTo("Solicitud resuelta satisfactoriamente");
+            assertThat(response.notasCierre()).isEqualTo("Se homologaron 3 materias");
 
             verify(historialRepository).save(any(Historial.class));
         }
@@ -428,8 +416,7 @@ class SolicitudServiceTest {
         @DisplayName("Falla al cerrar solicitud no en estado ATENDIDA")
         void cerrarSolicitud_conEstadoNoAtendida_lanzaBadRequestException() {
             testSolicitud.setEstado(EstadoSolicitud.EN_ATENCION);
-            CerrarSolicitudRequest request = new CerrarSolicitudRequest();
-            request.setResolucion("Resolucion");
+            CerrarSolicitudRequest request = new CerrarSolicitudRequest("Resolucion valida ok", null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
@@ -461,8 +448,8 @@ class SolicitudServiceTest {
             List<HistorialResponse> response = solicitudService.obtenerHistorial(1L);
 
             assertThat(response).hasSize(1);
-            assertThat(response.get(0).getAccion()).isEqualTo("REGISTRO");
-            assertThat(response.get(0).getUsuarioResponsable()).isEqualTo("admin");
+            assertThat(response.get(0).accion()).isEqualTo("REGISTRO");
+            assertThat(response.get(0).usuarioResponsable()).isEqualTo("admin");
         }
 
         @Test
@@ -484,60 +471,56 @@ class SolicitudServiceTest {
         @DisplayName("Transicion REGISTRADA -> CLASIFICADA es valida")
         void transicion_registradaAClasificada_esValida() {
             testSolicitud.setEstado(EstadoSolicitud.REGISTRADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.CLASIFICADA);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.CLASIFICADA, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             SolicitudResponse response = solicitudService.cambiarEstado(1L, request, "gestor");
 
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.CLASIFICADA);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.CLASIFICADA);
         }
 
         @Test
         @DisplayName("Transicion CLASIFICADA -> EN_ATENCION es valida")
         void transicion_clasificadaAEnAtencion_esValida() {
             testSolicitud.setEstado(EstadoSolicitud.CLASIFICADA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.EN_ATENCION, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             SolicitudResponse response = solicitudService.cambiarEstado(1L, request, "gestor");
 
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.EN_ATENCION);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.EN_ATENCION);
         }
 
         @Test
         @DisplayName("Transicion EN_ATENCION -> ATENDIDA es valida")
         void transicion_enAtencionAAtendida_esValida() {
             testSolicitud.setEstado(EstadoSolicitud.EN_ATENCION);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.ATENDIDA);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.ATENDIDA, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             SolicitudResponse response = solicitudService.cambiarEstado(1L, request, "gestor");
 
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.ATENDIDA);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.ATENDIDA);
         }
 
         @Test
         @DisplayName("Transicion ATENDIDA -> CERRADA es valida")
         void transicion_atendidaACerrada_esValida() {
             testSolicitud.setEstado(EstadoSolicitud.ATENDIDA);
-            CambiarEstadoRequest request = new CambiarEstadoRequest();
-            request.setNuevoEstado(EstadoSolicitud.CERRADA);
+            CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.CERRADA, null);
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
             when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             SolicitudResponse response = solicitudService.cambiarEstado(1L, request, "gestor");
 
-            assertThat(response.getEstado()).isEqualTo(EstadoSolicitud.CERRADA);
+            assertThat(response.estado()).isEqualTo(EstadoSolicitud.CERRADA);
         }
     }
 }

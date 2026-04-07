@@ -30,27 +30,27 @@ public class UsuarioService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByNombreUsuario(request.getNombreUsuario())
+        Usuario usuario = usuarioRepository.findByNombreUsuario(request.nombreUsuario())
                 .orElseThrow(() -> new UnauthorizedException("Nombre de usuario o contraseña inválidos"));
 
         if (!usuario.getActivo()) {
             throw new UnauthorizedException("La cuenta de usuario está desactivada");
         }
 
-        BCrypt.Result result = BCrypt.verifyer().verify(request.getContrasena().toCharArray(), usuario.getContrasena());
+        BCrypt.Result result = BCrypt.verifyer().verify(request.contrasena().toCharArray(), usuario.getContrasena());
         if (!result.verified) {
             throw new UnauthorizedException("Nombre de usuario o contraseña inválidos");
         }
 
         String token = jwtUtil.generateToken(usuario);
 
-        return LoginResponse.builder()
-                .token(token)
-                .tipo("Bearer")
-                .nombreUsuario(usuario.getNombreUsuario())
-                .rol(usuario.getRol())
-                .expiraEn(3600)
-                .build();
+        return new LoginResponse(
+                token,
+                "Bearer",
+                usuario.getNombreUsuario(),
+                usuario.getRol(),
+                3600
+        );
     }
 
     @Transactional(readOnly = true)
@@ -62,22 +62,22 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse crearUsuario(CrearUsuarioRequest request) {
-        if (usuarioRepository.existsByNombreUsuario(request.getNombreUsuario())) {
-            throw new BadRequestException("El nombre de usuario ya existe: " + request.getNombreUsuario());
+        if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario())) {
+            throw new BadRequestException("El nombre de usuario ya existe: " + request.nombreUsuario());
         }
 
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("El email ya existe: " + request.getEmail());
+        if (usuarioRepository.existsByEmail(request.email())) {
+            throw new BadRequestException("El email ya existe: " + request.email());
         }
 
-        String hashedPassword = BCrypt.withDefaults().hashToString(12, request.getContrasena().toCharArray());
+        String hashedPassword = BCrypt.withDefaults().hashToString(12, request.contrasena().toCharArray());
 
         Usuario usuario = Usuario.builder()
-                .nombreCompleto(request.getNombreCompleto())
-                .nombreUsuario(request.getNombreUsuario())
+                .nombreCompleto(request.nombreCompleto())
+                .nombreUsuario(request.nombreUsuario())
                 .contrasena(hashedPassword)
-                .email(request.getEmail())
-                .rol(request.getRol())
+                .email(request.email())
+                .rol(request.rol())
                 .activo(true)
                 .build();
 
@@ -90,7 +90,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario con ID " + id + " no encontrado"));
 
-        usuario.setActivo(request.getActivo());
+        usuario.setActivo(request.activo());
         Usuario saved = usuarioRepository.save(usuario);
         return toResponse(saved);
     }
@@ -108,13 +108,13 @@ public class UsuarioService {
     }
 
     private UsuarioResponse toResponse(Usuario usuario) {
-        return UsuarioResponse.builder()
-                .id(usuario.getId())
-                .nombreCompleto(usuario.getNombreCompleto())
-                .nombreUsuario(usuario.getNombreUsuario())
-                .email(usuario.getEmail())
-                .rol(usuario.getRol())
-                .activo(usuario.getActivo())
-                .build();
+        return new UsuarioResponse(
+                usuario.getId(),
+                usuario.getNombreCompleto(),
+                usuario.getNombreUsuario(),
+                usuario.getEmail(),
+                usuario.getRol(),
+                usuario.getActivo()
+        );
     }
 }

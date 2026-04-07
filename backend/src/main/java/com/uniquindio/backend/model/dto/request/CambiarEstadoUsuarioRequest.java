@@ -1,11 +1,9 @@
 package com.uniquindio.backend.model.dto.request;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
-@Data
-public class CambiarEstadoUsuarioRequest {
+public record CambiarEstadoUsuarioRequest(
 
-    @NotNull(message = "El estado activo es requerido")
-    private Boolean activo;
-}
+        @NotNull(message = "El estado activo es requerido")
+        Boolean activo
+) {}

@@ -21,72 +21,72 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Solicitud Incorrecta")
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Solicitud Incorrecta",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.NOT_FOUND.value())
-                .error("No Encontrado")
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "No Encontrado",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .error("No Autorizado")
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "No Autorizado",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ErrorResponse> handleForbidden(ForbiddenException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.FORBIDDEN.value())
-                .error("Prohibido")
-                .message(ex.getMessage())
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Prohibido",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.FORBIDDEN.value())
-                .error("Prohibido")
-                .message("Acceso denegado – permisos insuficientes para esta acción")
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Prohibido",
+                "Acceso denegado – permisos insuficientes para esta acción",
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(IAServiceUnavailableException.class)
     public ResponseEntity<IaNoDisponibleResponse> handleIAServiceUnavailable(IAServiceUnavailableException ex) {
-        IaNoDisponibleResponse response = IaNoDisponibleResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.SERVICE_UNAVAILABLE.value())
-                .error("Servicio No Disponible")
-                .message(ex.getMessage())
-                .build();
+        IaNoDisponibleResponse response = new IaNoDisponibleResponse(
+                Instant.now(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "Servicio No Disponible",
+                ex.getMessage()
+        );
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
 
@@ -96,38 +96,38 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
 
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error("Solicitud Incorrecta")
-                .message("Falla en validación: " + message)
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Solicitud Incorrecta",
+                "Falla en validación: " + message,
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
-                .error("Método No Permitido")
-                .message("El método " + ex.getMethod() + " no está soportado. Métodos permitidos: " +
-                        String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{}))
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.METHOD_NOT_ALLOWED.value(),
+                "Método No Permitido",
+                "El método " + ex.getMethod() + " no está soportado. Métodos permitidos: " +
+                        String.join(", ", ex.getSupportedMethods() != null ? ex.getSupportedMethods() : new String[]{}),
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, HttpServletRequest request) {
-        ErrorResponse error = ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error("Error Interno del Servidor")
-                .message("Ocurrió un error inesperado. Por favor intente de nuevo más tarde.")
-                .path(request.getRequestURI())
-                .build();
+        ErrorResponse error = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Error Interno del Servidor",
+                "Ocurrió un error inesperado. Por favor intente de nuevo más tarde.",
+                request.getRequestURI()
+        );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }
