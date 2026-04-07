@@ -4,6 +4,7 @@ import com.uniquindio.backend.model.*;
 import com.uniquindio.backend.model.dto.request.*;
 import com.uniquindio.backend.model.dto.response.*;
 import com.uniquindio.backend.model.enums.*;
+import static org.mockito.ArgumentMatchers.anyList;
 import com.uniquindio.backend.repository.*;
 import com.uniquindio.backend.util.exception.BadRequestException;
 import com.uniquindio.backend.util.exception.ResourceNotFoundException;
@@ -228,6 +229,7 @@ class SolicitudServiceTest {
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
 
+            // CERRADA != REGISTRADA, el mensaje es específico para el estado CERRADA
             assertThatThrownBy(() -> solicitudService.clasificarSolicitud(1L, request, "admin"))
                     .isInstanceOf(BadRequestException.class)
                     .hasMessage("No se puede modificar una solicitud cerrada");
@@ -339,6 +341,7 @@ class SolicitudServiceTest {
             Usuario nuevoUsuario = Usuario.builder()
                     .id(2L)
                     .nombreUsuario("nuevo")
+                    .rol(RolUsuario.GESTOR)
                     .activo(true)
                     .build();
 
@@ -356,7 +359,8 @@ class SolicitudServiceTest {
 
             solicitudService.asignarResponsable(1L, request, "admin");
 
-            verify(asignacionRepository, times(2)).save(any(Asignacion.class));
+            verify(asignacionRepository).saveAll(anyList());
+            verify(asignacionRepository).save(any(Asignacion.class));
         }
 
         @Test
@@ -437,7 +441,7 @@ class SolicitudServiceTest {
                     .id(1L)
                     .solicitud(testSolicitud)
                     .fechaHora(Instant.now())
-                    .accion("REGISTRO")
+                    .accion(AccionHistorial.REGISTRO)
                     .usuarioResponsable("admin")
                     .observaciones("Solicitud creada")
                     .build();

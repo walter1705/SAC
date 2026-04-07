@@ -1,5 +1,6 @@
 package com.uniquindio.backend.model;
 
+import com.uniquindio.backend.model.enums.AccionHistorial;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,8 +26,9 @@ public class Historial {
     @Column(nullable = false)
     private Instant fechaHora;
 
-    @Column(nullable = false, length = 100)
-    private String accion;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private AccionHistorial accion;
 
     @Column(nullable = false, length = 50)
     private String usuarioResponsable;

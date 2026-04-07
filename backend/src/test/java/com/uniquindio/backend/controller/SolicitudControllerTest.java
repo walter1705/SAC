@@ -1,6 +1,7 @@
 package com.uniquindio.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uniquindio.backend.model.Usuario;
 import com.uniquindio.backend.model.dto.request.AsignarResponsableRequest;
 import com.uniquindio.backend.model.dto.request.CambiarEstadoRequest;
 import com.uniquindio.backend.model.dto.request.CerrarSolicitudRequest;
@@ -13,6 +14,14 @@ import com.uniquindio.backend.model.dto.response.SolicitudesPaginadasResponse;
 import com.uniquindio.backend.model.enums.CanalOrigen;
 import com.uniquindio.backend.model.enums.EstadoSolicitud;
 import com.uniquindio.backend.model.enums.Prioridad;
+import com.uniquindio.backend.model.enums.RolUsuario;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
+
+import java.util.Collections;
 import com.uniquindio.backend.model.enums.TipoSolicitud;
 import com.uniquindio.backend.service.SolicitudService;
 import com.uniquindio.backend.util.config.JacksonConfig;
@@ -91,6 +100,17 @@ class SolicitudControllerTest {
 
     private SolicitudResponse testSolicitudResponse;
 
+    private static RequestPostProcessor withAuth() {
+        Usuario usuario = Usuario.builder()
+                .id(1L).nombreUsuario("gestor").rol(RolUsuario.GESTOR).activo(true).build();
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                usuario, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_GESTOR")));
+        return request -> {
+            request.setUserPrincipal(auth);
+            return request;
+        };
+    }
+
     @BeforeEach
     void setUp() {
         testSolicitudResponse = new SolicitudResponse(
@@ -112,6 +132,11 @@ class SolicitudControllerTest {
         );
     }
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     @DisplayName("Crear solicitud exitosa retorna 201 CREATED")
     void crearSolicitud_conDatosValidos_retorna201() throws Exception {
@@ -129,6 +154,7 @@ class SolicitudControllerTest {
                 .thenReturn(testSolicitudResponse);
 
         mockMvc.perform(post("/api/v1/solicitudes")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -263,6 +289,7 @@ class SolicitudControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -282,6 +309,7 @@ class SolicitudControllerTest {
                 .thenThrow(new BadRequestException("Solo se pueden clasificar solicitudes en estado REGISTRADA"));
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -312,6 +340,7 @@ class SolicitudControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -327,6 +356,7 @@ class SolicitudControllerTest {
                 .thenThrow(new BadRequestException("Transición de estado inválida"));
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -354,6 +384,7 @@ class SolicitudControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -371,6 +402,7 @@ class SolicitudControllerTest {
                 .thenThrow(new BadRequestException("No se puede asignar un usuario inactivo"));
 
         mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -405,6 +437,7 @@ class SolicitudControllerTest {
                 .thenReturn(response);
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -421,6 +454,7 @@ class SolicitudControllerTest {
                 .thenThrow(new BadRequestException("No se puede cerrar la solicitud"));
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
+                        .with(withAuth())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

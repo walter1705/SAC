@@ -5,6 +5,7 @@ import com.uniquindio.backend.model.dto.request.*;
 import com.uniquindio.backend.model.dto.response.*;
 import com.uniquindio.backend.model.enums.*;
 import com.uniquindio.backend.service.SolicitudService;
+import com.uniquindio.backend.util.exception.ForbiddenException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/solicitudes")
@@ -23,6 +25,9 @@ import java.util.List;
 public class SolicitudController {
 
     private final SolicitudService solicitudService;
+
+    private static final Set<String> SORT_FIELDS_PERMITIDOS =
+            Set.of("fechaHoraRegistro", "estado", "prioridad", "tipo");
 
     @PostMapping
     public ResponseEntity<SolicitudResponse> crearSolicitud(
@@ -105,15 +110,19 @@ public class SolicitudController {
         if (authentication != null && authentication.getPrincipal() instanceof Usuario usuario) {
             return usuario.getNombreUsuario();
         }
-        return "system";
+        throw new ForbiddenException("No se pudo determinar la identidad del usuario autenticado");
     }
 
     private Pageable createPageable(int page, int size, String sort) {
         String[] sortParams = sort.split(",");
         String sortField = sortParams[0];
+        if (!SORT_FIELDS_PERMITIDOS.contains(sortField)) {
+            sortField = "fechaHoraRegistro";
+        }
         Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        return PageRequest.of(page, Math.min(size, 100), Sort.by(direction, sortField));
+        int clampedSize = Math.min(Math.max(size, 1), 100);
+        return PageRequest.of(page, clampedSize, Sort.by(direction, sortField));
     }
 }

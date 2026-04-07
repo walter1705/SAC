@@ -69,6 +69,7 @@ class UsuarioServiceTest {
 
             when(usuarioRepository.findByNombreUsuario("jperez")).thenReturn(Optional.of(testUsuario));
             when(jwtUtil.generateToken(testUsuario)).thenReturn("test-jwt-token");
+            when(jwtUtil.getExpiration()).thenReturn(3600000L);
 
             LoginResponse response = usuarioService.login(request);
 

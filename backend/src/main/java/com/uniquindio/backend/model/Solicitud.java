@@ -8,7 +8,11 @@ import java.time.Instant;
 import com.uniquindio.backend.model.enums.*;
 
 @Entity
-@Table(name = "solicitudes")
+@Table(name = "solicitudes", indexes = {
+    @Index(name = "idx_solicitud_estado", columnList = "estado"),
+    @Index(name = "idx_solicitud_tipo", columnList = "tipo"),
+    @Index(name = "idx_solicitud_prioridad", columnList = "prioridad")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -68,9 +72,6 @@ public class Solicitud {
     protected void onCreate() {
         if (fechaHoraRegistro == null) {
             fechaHoraRegistro = Instant.now();
-        }
-        if (estado == null) {
-            estado = EstadoSolicitud.REGISTRADA;
         }
     }
 }

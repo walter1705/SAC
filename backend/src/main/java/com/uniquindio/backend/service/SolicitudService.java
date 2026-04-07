@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,6 @@ public class SolicitudService {
     private final HistorialRepository historialRepository;
     private final UsuarioService usuarioService;
 
-    // Valid state transitions map
     private static final Map<EstadoSolicitud, Set<EstadoSolicitud>> VALID_TRANSITIONS = Map.of(
             EstadoSolicitud.REGISTRADA, Set.of(EstadoSolicitud.CLASIFICADA),
             EstadoSolicitud.CLASIFICADA, Set.of(EstadoSolicitud.EN_ATENCION),
@@ -52,7 +50,7 @@ public class SolicitudService {
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        registrarHistorial(saved, "REGISTRO", nombreUsuario, "Solicitud creada vía " + request.canalOrigen());
+        registrarHistorial(saved, AccionHistorial.REGISTRO, nombreUsuario, "Solicitud creada vía " + request.canalOrigen());
 
         return toResponse(saved);
     }
@@ -69,7 +67,7 @@ public class SolicitudService {
 
         List<SolicitudResponse> content = page.getContent().stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
 
         return new SolicitudesPaginadasResponse(
                 content,
@@ -90,12 +88,11 @@ public class SolicitudService {
     public SolicitudResponse clasificarSolicitud(Long id, ClasificarSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = findSolicitudById(id);
 
-        if (solicitud.getEstado() == EstadoSolicitud.CERRADA) {
-            throw new BadRequestException("No se puede modificar una solicitud cerrada");
-        }
-
         if (solicitud.getEstado() != EstadoSolicitud.REGISTRADA) {
-            throw new BadRequestException("Solo se pueden clasificar solicitudes en estado REGISTRADA");
+            String mensaje = solicitud.getEstado() == EstadoSolicitud.CERRADA
+                    ? "No se puede modificar una solicitud cerrada"
+                    : "Solo se pueden clasificar solicitudes en estado REGISTRADA";
+            throw new BadRequestException(mensaje);
         }
 
         solicitud.setTipo(request.tipo());
@@ -105,7 +102,7 @@ public class SolicitudService {
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        registrarHistorial(saved, "CLASIFICACION", nombreUsuario,
+        registrarHistorial(saved, AccionHistorial.CLASIFICACION, nombreUsuario,
                 "Clasificada como " + request.tipo() + " con prioridad " + request.prioridad());
 
         return toResponse(saved);
@@ -130,7 +127,7 @@ public class SolicitudService {
 
         String nota = request.nota() != null ? request.nota() :
                 "Estado cambiado a " + request.nuevoEstado();
-        registrarHistorial(saved, "CAMBIO_ESTADO", nombreUsuario, nota);
+        registrarHistorial(saved, AccionHistorial.CAMBIO_ESTADO, nombreUsuario, nota);
 
         return toResponse(saved);
     }
@@ -149,12 +146,13 @@ public class SolicitudService {
             throw new BadRequestException("No se puede asignar un usuario inactivo");
         }
 
-        // Deactivate existing assignments
-        asignacionRepository.findBySolicitudIdAndActivaTrue(solicitudId)
-                .forEach(a -> {
-                    a.setActiva(false);
-                    asignacionRepository.save(a);
-                });
+        if (usuario.getRol() != RolUsuario.GESTOR) {
+            throw new BadRequestException("Solo se puede asignar como responsable a un usuario con rol GESTOR");
+        }
+
+        List<Asignacion> asignacionesActivas = asignacionRepository.findBySolicitudIdAndActivaTrue(solicitudId);
+        asignacionesActivas.forEach(a -> a.setActiva(false));
+        asignacionRepository.saveAll(asignacionesActivas);
 
         Asignacion asignacion = Asignacion.builder()
                 .solicitud(solicitud)
@@ -167,7 +165,7 @@ public class SolicitudService {
         String mensajeHistorial = request.notaAsignacion() != null
                 ? request.notaAsignacion()
                 : "Asignada a " + usuario.getNombreUsuario() + " para gestión";
-        registrarHistorial(solicitud, "ASIGNACION", nombreUsuario, mensajeHistorial);
+        registrarHistorial(solicitud, AccionHistorial.ASIGNACION, nombreUsuario, mensajeHistorial);
 
         return new AsignacionResponse(
                 saved.getId(),
@@ -197,7 +195,7 @@ public class SolicitudService {
         if (request.notasCierre() != null) {
             mensajeHistorial += " - " + request.notasCierre();
         }
-        registrarHistorial(saved, "CIERRE", nombreUsuario, mensajeHistorial);
+        registrarHistorial(saved, AccionHistorial.CIERRE, nombreUsuario, mensajeHistorial);
 
         return toResponse(saved);
     }
@@ -208,7 +206,7 @@ public class SolicitudService {
 
         return historialRepository.findBySolicitudIdOrderByFechaHoraAsc(solicitudId).stream()
                 .map(this::toHistorialResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Solicitud findSolicitudById(Long id) {
@@ -216,7 +214,7 @@ public class SolicitudService {
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud con ID " + id + " no encontrada"));
     }
 
-    private void registrarHistorial(Solicitud solicitud, String accion, String nombreUsuario, String observaciones) {
+    private void registrarHistorial(Solicitud solicitud, AccionHistorial accion, String nombreUsuario, String observaciones) {
         Historial historial = Historial.builder()
                 .solicitud(solicitud)
                 .accion(accion)
@@ -250,7 +248,7 @@ public class SolicitudService {
         return new HistorialResponse(
                 historial.getId(),
                 historial.getFechaHora(),
-                historial.getAccion(),
+                historial.getAccion().name(),
                 historial.getUsuarioResponsable(),
                 historial.getObservaciones()
         );

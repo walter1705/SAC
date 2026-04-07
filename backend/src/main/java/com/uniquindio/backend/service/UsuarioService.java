@@ -49,7 +49,7 @@ public class UsuarioService {
                 "Bearer",
                 usuario.getNombreUsuario(),
                 usuario.getRol(),
-                3600
+                (int) (jwtUtil.getExpiration() / 1000)
         );
     }
 
@@ -57,7 +57,7 @@ public class UsuarioService {
     public List<UsuarioResponse> listarUsuariosActivos() {
         return usuarioRepository.findByActivoTrue().stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
