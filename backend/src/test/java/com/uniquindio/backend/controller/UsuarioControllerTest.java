@@ -36,7 +36,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -84,30 +83,15 @@ class UsuarioControllerTest {
 
     @BeforeEach
     void setUp() {
-        testUsuarioResponse = UsuarioResponse.builder()
-                .id(1L)
-                .nombreCompleto("Juan Perez")
-                .nombreUsuario("jperez")
-                .email("jperez@test.com")
-                .rol(RolUsuario.GESTOR)
-                .activo(true)
-                .build();
+        testUsuarioResponse = new UsuarioResponse(1L, "Juan Perez", "jperez", "jperez@test.com", RolUsuario.GESTOR, true);
     }
 
     @Test
     @DisplayName("Login exitoso retorna 200 OK")
     void login_conCredencialesValidas_retorna200() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setNombreUsuario("jperez");
-        request.setContrasena("password123");
+        LoginRequest request = new LoginRequest("jperez", "password123");
 
-        LoginResponse response = LoginResponse.builder()
-                .token("test-token")
-                .tipo("Bearer")
-                .nombreUsuario("jperez")
-                .rol(RolUsuario.GESTOR)
-                .expiraEn(3600)
-                .build();
+        LoginResponse response = new LoginResponse("test-token", "Bearer", "jperez", RolUsuario.GESTOR, 3600);
 
         when(usuarioService.login(any(LoginRequest.class))).thenReturn(response);
 
@@ -124,9 +108,7 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Login con credenciales invalidas retorna 401")
     void login_conCredencialesInvalidas_retorna401() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setNombreUsuario("jperez");
-        request.setContrasena("wrongpassword");
+        LoginRequest request = new LoginRequest("jperez", "wrongpassword");
 
         when(usuarioService.login(any(LoginRequest.class)))
                 .thenThrow(new UnauthorizedException("Nombre de usuario o contraseña inválidos"));
@@ -140,8 +122,7 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Login sin nombre de usuario retorna 400")
     void login_sinNombreUsuario_retorna400() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setContrasena("password123");
+        LoginRequest request = new LoginRequest(null, "password123");
 
         mockMvc.perform(post("/api/v1/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -152,8 +133,7 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Login sin contrasena retorna 400")
     void login_sinContrasena_retorna400() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setNombreUsuario("jperez");
+        LoginRequest request = new LoginRequest("jperez", null);
 
         mockMvc.perform(post("/api/v1/usuarios/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -186,21 +166,11 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Crear usuario exitoso retorna 201 CREATED")
     void crearUsuario_conDatosValidos_retorna201() throws Exception {
-        CrearUsuarioRequest request = new CrearUsuarioRequest();
-        request.setNombreCompleto("Nuevo Usuario");
-        request.setNombreUsuario("nusuario");
-        request.setContrasena("password123");
-        request.setEmail("nusuario@test.com");
-        request.setRol(RolUsuario.GESTOR);
+        CrearUsuarioRequest request = new CrearUsuarioRequest(
+                "Nuevo Usuario", "nusuario", "password123", "nusuario@test.com", RolUsuario.GESTOR
+        );
 
-        UsuarioResponse response = UsuarioResponse.builder()
-                .id(2L)
-                .nombreCompleto("Nuevo Usuario")
-                .nombreUsuario("nusuario")
-                .email("nusuario@test.com")
-                .rol(RolUsuario.GESTOR)
-                .activo(true)
-                .build();
+        UsuarioResponse response = new UsuarioResponse(2L, "Nuevo Usuario", "nusuario", "nusuario@test.com", RolUsuario.GESTOR, true);
 
         when(usuarioService.crearUsuario(any(CrearUsuarioRequest.class))).thenReturn(response);
 
@@ -215,12 +185,9 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Crear usuario con nombre duplicado retorna 400")
     void crearUsuario_conNombreDuplicado_retorna400() throws Exception {
-        CrearUsuarioRequest request = new CrearUsuarioRequest();
-        request.setNombreCompleto("Nuevo Usuario");
-        request.setNombreUsuario("jperez");
-        request.setContrasena("password123");
-        request.setEmail("nuevo@test.com");
-        request.setRol(RolUsuario.GESTOR);
+        CrearUsuarioRequest request = new CrearUsuarioRequest(
+                "Nuevo Usuario", "jperez", "password123", "nuevo@test.com", RolUsuario.GESTOR
+        );
 
         when(usuarioService.crearUsuario(any(CrearUsuarioRequest.class)))
                 .thenThrow(new BadRequestException("El nombre de usuario ya existe: jperez"));
@@ -234,11 +201,9 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Crear usuario sin email retorna 400")
     void crearUsuario_sinEmail_retorna400() throws Exception {
-        CrearUsuarioRequest request = new CrearUsuarioRequest();
-        request.setNombreCompleto("Nuevo Usuario");
-        request.setNombreUsuario("nusuario");
-        request.setContrasena("password123");
-        request.setRol(RolUsuario.GESTOR);
+        CrearUsuarioRequest request = new CrearUsuarioRequest(
+                "Nuevo Usuario", "nusuario", "password123", null, RolUsuario.GESTOR
+        );
 
         mockMvc.perform(post("/api/v1/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -249,12 +214,9 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Crear usuario con email invalido retorna 400")
     void crearUsuario_conEmailInvalido_retorna400() throws Exception {
-        CrearUsuarioRequest request = new CrearUsuarioRequest();
-        request.setNombreCompleto("Nuevo Usuario");
-        request.setNombreUsuario("nusuario");
-        request.setContrasena("password123");
-        request.setEmail("email-invalido");
-        request.setRol(RolUsuario.GESTOR);
+        CrearUsuarioRequest request = new CrearUsuarioRequest(
+                "Nuevo Usuario", "nusuario", "password123", "email-invalido", RolUsuario.GESTOR
+        );
 
         mockMvc.perform(post("/api/v1/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -265,12 +227,9 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Crear usuario con contrasena corta retorna 400")
     void crearUsuario_conContrasenaCorta_retorna400() throws Exception {
-        CrearUsuarioRequest request = new CrearUsuarioRequest();
-        request.setNombreCompleto("Nuevo Usuario");
-        request.setNombreUsuario("nusuario");
-        request.setContrasena("short");
-        request.setEmail("nusuario@test.com");
-        request.setRol(RolUsuario.GESTOR);
+        CrearUsuarioRequest request = new CrearUsuarioRequest(
+                "Nuevo Usuario", "nusuario", "short", "nusuario@test.com", RolUsuario.GESTOR
+        );
 
         mockMvc.perform(post("/api/v1/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -281,17 +240,9 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Cambiar estado de usuario retorna 200 OK")
     void cambiarEstadoUsuario_conDatosValidos_retorna200() throws Exception {
-        CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest();
-        request.setActivo(false);
+        CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest(false);
 
-        UsuarioResponse response = UsuarioResponse.builder()
-                .id(1L)
-                .nombreCompleto("Juan Perez")
-                .nombreUsuario("jperez")
-                .email("jperez@test.com")
-                .rol(RolUsuario.GESTOR)
-                .activo(false)
-                .build();
+        UsuarioResponse response = new UsuarioResponse(1L, "Juan Perez", "jperez", "jperez@test.com", RolUsuario.GESTOR, false);
 
         when(usuarioService.cambiarEstadoUsuario(eq(1L), any(CambiarEstadoUsuarioRequest.class)))
                 .thenReturn(response);
@@ -306,8 +257,7 @@ class UsuarioControllerTest {
     @Test
     @DisplayName("Cambiar estado de usuario no encontrado retorna 404")
     void cambiarEstadoUsuario_noEncontrado_retorna404() throws Exception {
-        CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest();
-        request.setActivo(false);
+        CambiarEstadoUsuarioRequest request = new CambiarEstadoUsuarioRequest(false);
 
         when(usuarioService.cambiarEstadoUsuario(eq(999L), any(CambiarEstadoUsuarioRequest.class)))
                 .thenThrow(new ResourceNotFoundException("Usuario con ID 999 no encontrado"));

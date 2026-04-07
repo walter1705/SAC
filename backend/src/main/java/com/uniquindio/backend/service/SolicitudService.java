@@ -40,20 +40,19 @@ public class SolicitudService {
     @Transactional
     public SolicitudResponse crearSolicitud(CrearSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = Solicitud.builder()
-                .estudianteNombre(request.getEstudianteNombre())
-                .estudianteCorreo(request.getEstudianteCorreo())
-                .estudianteTelefono(request.getEstudianteTelefono())
-                .estudianteIdentificacion(request.getEstudianteIdentificacion())
-                .asunto(request.getAsunto())
-                .descripcion(request.getDescripcion())
-                .canalOrigen(request.getCanalOrigen())
+                .estudianteNombre(request.estudianteNombre())
+                .estudianteCorreo(request.estudianteCorreo())
+                .estudianteTelefono(request.estudianteTelefono())
+                .estudianteIdentificacion(request.estudianteIdentificacion())
+                .asunto(request.asunto())
+                .descripcion(request.descripcion())
+                .canalOrigen(request.canalOrigen())
                 .estado(EstadoSolicitud.REGISTRADA)
                 .build();
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        // Create audit history entry
-        registrarHistorial(saved, "REGISTRO", nombreUsuario, "Solicitud creada vía " + request.getCanalOrigen());
+        registrarHistorial(saved, "REGISTRO", nombreUsuario, "Solicitud creada vía " + request.canalOrigen());
 
         return toResponse(saved);
     }
@@ -72,13 +71,13 @@ public class SolicitudService {
                 .map(this::toResponse)
                 .collect(Collectors.toList());
 
-        return SolicitudesPaginadasResponse.builder()
-                .content(content)
-                .pagina(page.getNumber())
-                .tamaño(page.getSize())
-                .totalElementos(page.getTotalElements())
-                .totalPaginas(page.getTotalPages())
-                .build();
+        return new SolicitudesPaginadasResponse(
+                content,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -99,15 +98,15 @@ public class SolicitudService {
             throw new BadRequestException("Solo se pueden clasificar solicitudes en estado REGISTRADA");
         }
 
-        solicitud.setTipo(request.getTipo());
-        solicitud.setPrioridad(request.getPrioridad());
-        solicitud.setNotaClasificacion(request.getNotaClasificacion());
+        solicitud.setTipo(request.tipo());
+        solicitud.setPrioridad(request.prioridad());
+        solicitud.setNotaClasificacion(request.notaClasificacion());
         solicitud.setEstado(EstadoSolicitud.CLASIFICADA);
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
         registrarHistorial(saved, "CLASIFICACION", nombreUsuario,
-                "Clasificada como " + request.getTipo() + " con prioridad " + request.getPrioridad());
+                "Clasificada como " + request.tipo() + " con prioridad " + request.prioridad());
 
         return toResponse(saved);
     }
@@ -121,16 +120,16 @@ public class SolicitudService {
         }
 
         Set<EstadoSolicitud> validNextStates = VALID_TRANSITIONS.get(solicitud.getEstado());
-        if (!validNextStates.contains(request.getNuevoEstado())) {
+        if (!validNextStates.contains(request.nuevoEstado())) {
             throw new BadRequestException(
-                    "Transición de estado inválida de " + solicitud.getEstado() + " a " + request.getNuevoEstado());
+                    "Transición de estado inválida de " + solicitud.getEstado() + " a " + request.nuevoEstado());
         }
 
-        solicitud.setEstado(request.getNuevoEstado());
+        solicitud.setEstado(request.nuevoEstado());
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        String nota = request.getNota() != null ? request.getNota() :
-                "Estado cambiado a " + request.getNuevoEstado();
+        String nota = request.nota() != null ? request.nota() :
+                "Estado cambiado a " + request.nuevoEstado();
         registrarHistorial(saved, "CAMBIO_ESTADO", nombreUsuario, nota);
 
         return toResponse(saved);
@@ -144,7 +143,7 @@ public class SolicitudService {
             throw new BadRequestException("No se puede asignar responsable a una solicitud cerrada");
         }
 
-        Usuario usuario = usuarioService.findById(request.getResponsableId());
+        Usuario usuario = usuarioService.findById(request.responsableId());
 
         if (!usuario.getActivo()) {
             throw new BadRequestException("No se puede asignar un usuario inactivo");
@@ -165,18 +164,18 @@ public class SolicitudService {
 
         Asignacion saved = asignacionRepository.save(asignacion);
 
-        String mensajeHistorial = request.getNotaAsignacion() != null
-                ? request.getNotaAsignacion()
+        String mensajeHistorial = request.notaAsignacion() != null
+                ? request.notaAsignacion()
                 : "Asignada a " + usuario.getNombreUsuario() + " para gestión";
         registrarHistorial(solicitud, "ASIGNACION", nombreUsuario, mensajeHistorial);
 
-        return AsignacionResponse.builder()
-                .id(saved.getId())
-                .solicitudId(solicitud.getId())
-                .usuarioId(usuario.getId())
-                .fechaAsignacion(saved.getFechaAsignacion())
-                .activa(saved.getActiva())
-                .build();
+        return new AsignacionResponse(
+                saved.getId(),
+                solicitud.getId(),
+                usuario.getId(),
+                saved.getFechaAsignacion(),
+                saved.getActiva()
+        );
     }
 
     @Transactional
@@ -189,14 +188,14 @@ public class SolicitudService {
         }
 
         solicitud.setEstado(EstadoSolicitud.CERRADA);
-        solicitud.setResolucion(request.getResolucion());
-        solicitud.setNotasCierre(request.getNotasCierre());
+        solicitud.setResolucion(request.resolucion());
+        solicitud.setNotasCierre(request.notasCierre());
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
-        String mensajeHistorial = request.getResolucion();
-        if (request.getNotasCierre() != null) {
-            mensajeHistorial += " - " + request.getNotasCierre();
+        String mensajeHistorial = request.resolucion();
+        if (request.notasCierre() != null) {
+            mensajeHistorial += " - " + request.notasCierre();
         }
         registrarHistorial(saved, "CIERRE", nombreUsuario, mensajeHistorial);
 
@@ -205,7 +204,6 @@ public class SolicitudService {
 
     @Transactional(readOnly = true)
     public List<HistorialResponse> obtenerHistorial(Long solicitudId) {
-        // Verify the solicitud exists
         findSolicitudById(solicitudId);
 
         return historialRepository.findBySolicitudIdOrderByFechaHoraAsc(solicitudId).stream()
@@ -229,32 +227,32 @@ public class SolicitudService {
     }
 
     private SolicitudResponse toResponse(Solicitud solicitud) {
-        return SolicitudResponse.builder()
-                .id(solicitud.getId())
-                .estudianteNombre(solicitud.getEstudianteNombre())
-                .estudianteCorreo(solicitud.getEstudianteCorreo())
-                .estudianteTelefono(solicitud.getEstudianteTelefono())
-                .estudianteIdentificacion(solicitud.getEstudianteIdentificacion())
-                .asunto(solicitud.getAsunto())
-                .descripcion(solicitud.getDescripcion())
-                .canalOrigen(solicitud.getCanalOrigen())
-                .fechaHoraRegistro(solicitud.getFechaHoraRegistro())
-                .tipo(solicitud.getTipo())
-                .prioridad(solicitud.getPrioridad())
-                .notaClasificacion(solicitud.getNotaClasificacion())
-                .estado(solicitud.getEstado())
-                .resolucion(solicitud.getResolucion())
-                .notasCierre(solicitud.getNotasCierre())
-                .build();
+        return new SolicitudResponse(
+                solicitud.getId(),
+                solicitud.getEstudianteNombre(),
+                solicitud.getEstudianteCorreo(),
+                solicitud.getEstudianteTelefono(),
+                solicitud.getEstudianteIdentificacion(),
+                solicitud.getAsunto(),
+                solicitud.getDescripcion(),
+                solicitud.getCanalOrigen(),
+                solicitud.getFechaHoraRegistro(),
+                solicitud.getTipo(),
+                solicitud.getPrioridad(),
+                solicitud.getNotaClasificacion(),
+                solicitud.getEstado(),
+                solicitud.getResolucion(),
+                solicitud.getNotasCierre()
+        );
     }
 
     private HistorialResponse toHistorialResponse(Historial historial) {
-        return HistorialResponse.builder()
-                .id(historial.getId())
-                .fechaHora(historial.getFechaHora())
-                .accion(historial.getAccion())
-                .usuarioResponsable(historial.getUsuarioResponsable())
-                .observaciones(historial.getObservaciones())
-                .build();
+        return new HistorialResponse(
+                historial.getId(),
+                historial.getFechaHora(),
+                historial.getAccion(),
+                historial.getUsuarioResponsable(),
+                historial.getObservaciones()
+        );
     }
 }

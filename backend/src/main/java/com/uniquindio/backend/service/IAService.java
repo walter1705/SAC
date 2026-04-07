@@ -84,7 +84,7 @@ public class IAService {
         """;
 
     public SugerirClasificacionResponse sugerirClasificacion(SugerirClasificacionRequest request) {
-        String prompt = String.format(PROMPT_CLASIFICACION, request.getDescripcion());
+        String prompt = String.format(PROMPT_CLASIFICACION, request.descripcion());
         String respuesta = geminiClient.generarContenido(prompt);
 
         return parsearRespuestaClasificacion(respuesta);
@@ -117,11 +117,11 @@ public class IAService {
 
         String resumen = geminiClient.generarContenido(prompt);
 
-        return ResumenSolicitudResponse.builder()
-            .idSolicitud(solicitudId)
-            .resumen(resumen.trim())
-            .generadoEn(Instant.now())
-            .build();
+        return new ResumenSolicitudResponse(
+            solicitudId,
+            resumen.trim(),
+            Instant.now()
+        );
     }
 
     private String formatearHistorial(List<Historial> historial) {
@@ -157,12 +157,7 @@ public class IAService {
             TipoSolicitud tipo = TipoSolicitud.valueOf(tipoStr.toUpperCase());
             Prioridad prioridad = Prioridad.valueOf(prioridadStr.toUpperCase());
 
-            return SugerirClasificacionResponse.builder()
-                .tipoSugerido(tipo)
-                .prioridadSugerida(prioridad)
-                .justificacion(justificacion)
-                .confianza(confianza)
-                .build();
+            return new SugerirClasificacionResponse(tipo, prioridad, justificacion, confianza);
 
         } catch (Exception e) {
             log.error("Error al parsear respuesta de clasificación: {}", e.getMessage());

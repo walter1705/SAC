@@ -93,31 +93,37 @@ class SolicitudControllerTest {
 
     @BeforeEach
     void setUp() {
-        testSolicitudResponse = SolicitudResponse.builder()
-                .id(1L)
-                .estudianteNombre("Pedro Estudiante")
-                .estudianteCorreo("pedro@uni.edu.co")
-                .estudianteTelefono("3001234567")
-                .estudianteIdentificacion("12345678")
-                .asunto("Solicitud de homologacion")
-                .descripcion("Necesito homologar materias")
-                .canalOrigen(CanalOrigen.WEB)
-                .fechaHoraRegistro(Instant.now())
-                .estado(EstadoSolicitud.REGISTRADA)
-                .build();
+        testSolicitudResponse = new SolicitudResponse(
+                1L,
+                "Pedro Estudiante",
+                "pedro@uni.edu.co",
+                "3001234567",
+                "12345678",
+                "Solicitud de homologacion",
+                "Necesito homologar materias",
+                CanalOrigen.WEB,
+                Instant.now(),
+                null,
+                null,
+                null,
+                EstadoSolicitud.REGISTRADA,
+                null,
+                null
+        );
     }
 
     @Test
     @DisplayName("Crear solicitud exitosa retorna 201 CREATED")
     void crearSolicitud_conDatosValidos_retorna201() throws Exception {
-        CrearSolicitudRequest request = new CrearSolicitudRequest();
-        request.setEstudianteNombre("Pedro Estudiante");
-        request.setEstudianteCorreo("pedro@uni.edu.co");
-        request.setEstudianteTelefono("3001234567");
-        request.setEstudianteIdentificacion("12345678");
-        request.setAsunto("Solicitud de homologacion");
-        request.setDescripcion("Necesito homologar materias del programa anterior");
-        request.setCanalOrigen(CanalOrigen.WEB);
+        CrearSolicitudRequest request = new CrearSolicitudRequest(
+                "Pedro Estudiante",
+                "pedro@uni.edu.co",
+                "3001234567",
+                "12345678",
+                "Solicitud de homologacion",
+                "Necesito homologar materias del programa anterior",
+                CanalOrigen.WEB
+        );
 
         when(solicitudService.crearSolicitud(any(CrearSolicitudRequest.class), anyString()))
                 .thenReturn(testSolicitudResponse);
@@ -134,11 +140,15 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Crear solicitud sin asunto retorna 400")
     void crearSolicitud_sinAsunto_retorna400() throws Exception {
-        CrearSolicitudRequest request = new CrearSolicitudRequest();
-        request.setEstudianteNombre("Pedro Estudiante");
-        request.setEstudianteCorreo("pedro@uni.edu.co");
-        request.setDescripcion("Descripcion de la solicitud");
-        request.setCanalOrigen(CanalOrigen.WEB);
+        CrearSolicitudRequest request = new CrearSolicitudRequest(
+                "Pedro Estudiante",
+                "pedro@uni.edu.co",
+                "3001234567",
+                "12345678",
+                null,
+                "Descripcion de la solicitud",
+                CanalOrigen.WEB
+        );
 
         mockMvc.perform(post("/api/v1/solicitudes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -149,11 +159,15 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Crear solicitud sin descripcion retorna 400")
     void crearSolicitud_sinDescripcion_retorna400() throws Exception {
-        CrearSolicitudRequest request = new CrearSolicitudRequest();
-        request.setEstudianteNombre("Pedro Estudiante");
-        request.setEstudianteCorreo("pedro@uni.edu.co");
-        request.setAsunto("Asunto de prueba");
-        request.setCanalOrigen(CanalOrigen.WEB);
+        CrearSolicitudRequest request = new CrearSolicitudRequest(
+                "Pedro Estudiante",
+                "pedro@uni.edu.co",
+                "3001234567",
+                "12345678",
+                "Asunto de prueba",
+                null,
+                CanalOrigen.WEB
+        );
 
         mockMvc.perform(post("/api/v1/solicitudes")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -164,13 +178,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Listar solicitudes retorna 200 OK")
     void listarSolicitudes_sinFiltros_retorna200() throws Exception {
-        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
-                .content(List.of(testSolicitudResponse))
-                .pagina(0)
-                .tamaño(20)
-                .totalElementos(1L)
-                .totalPaginas(1)
-                .build();
+        SolicitudesPaginadasResponse response = new SolicitudesPaginadasResponse(
+                List.of(testSolicitudResponse), 0, 20, 1L, 1
+        );
 
         when(solicitudService.listarSolicitudes(isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                 .thenReturn(response);
@@ -184,13 +194,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Listar solicitudes con filtro de estado retorna 200 OK")
     void listarSolicitudes_conFiltroEstado_retorna200() throws Exception {
-        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
-                .content(List.of())
-                .pagina(0)
-                .tamaño(20)
-                .totalElementos(0L)
-                .totalPaginas(0)
-                .build();
+        SolicitudesPaginadasResponse response = new SolicitudesPaginadasResponse(
+                List.of(), 0, 20, 0L, 0
+        );
 
         when(solicitudService.listarSolicitudes(
                 eq(EstadoSolicitud.REGISTRADA), isNull(), isNull(), isNull(), any(Pageable.class)))
@@ -204,13 +210,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Listar solicitudes con paginacion personalizada")
     void listarSolicitudes_conPaginacion_retorna200() throws Exception {
-        SolicitudesPaginadasResponse response = SolicitudesPaginadasResponse.builder()
-                .content(List.of())
-                .pagina(1)
-                .tamaño(10)
-                .totalElementos(15L)
-                .totalPaginas(2)
-                .build();
+        SolicitudesPaginadasResponse response = new SolicitudesPaginadasResponse(
+                List.of(), 1, 10, 15L, 2
+        );
 
         when(solicitudService.listarSolicitudes(isNull(), isNull(), isNull(), isNull(), any(Pageable.class)))
                 .thenReturn(response);
@@ -247,17 +249,15 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Clasificar solicitud exitosa retorna 200 OK")
     void clasificarSolicitud_conDatosValidos_retorna200() throws Exception {
-        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-        request.setTipo(TipoSolicitud.HOMOLOGACION);
-        request.setPrioridad(Prioridad.ALTA);
-        request.setNotaClasificacion("Solicitud prioritaria");
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Solicitud prioritaria"
+        );
 
-        SolicitudResponse response = SolicitudResponse.builder()
-                .id(1L)
-                .estado(EstadoSolicitud.CLASIFICADA)
-                .tipo(TipoSolicitud.HOMOLOGACION)
-                .prioridad(Prioridad.ALTA)
-                .build();
+        SolicitudResponse response = new SolicitudResponse(
+                1L, null, null, null, null, null, null, null, null,
+                TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, null,
+                EstadoSolicitud.CLASIFICADA, null, null
+        );
 
         when(solicitudService.clasificarSolicitud(eq(1L), any(ClasificarSolicitudRequest.class), anyString()))
                 .thenReturn(response);
@@ -274,10 +274,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Clasificar solicitud ya clasificada retorna 400")
     void clasificarSolicitud_yaClasificada_retorna400() throws Exception {
-        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-        request.setTipo(TipoSolicitud.HOMOLOGACION);
-        request.setPrioridad(Prioridad.ALTA);
-        request.setNotaClasificacion("Nota");
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Nota"
+        );
 
         when(solicitudService.clasificarSolicitud(eq(1L), any(ClasificarSolicitudRequest.class), anyString()))
                 .thenThrow(new BadRequestException("Solo se pueden clasificar solicitudes en estado REGISTRADA"));
@@ -291,9 +290,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Clasificar solicitud sin tipo retorna 400")
     void clasificarSolicitud_sinTipo_retorna400() throws Exception {
-        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest();
-        request.setPrioridad(Prioridad.ALTA);
-        request.setNotaClasificacion("Nota");
+        ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(null, Prioridad.ALTA, "Nota");
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/clasificar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -304,14 +301,12 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cambiar estado exitoso retorna 200 OK")
     void cambiarEstado_transicionValida_retorna200() throws Exception {
-        CambiarEstadoRequest request = new CambiarEstadoRequest();
-        request.setNuevoEstado(EstadoSolicitud.EN_ATENCION);
-        request.setNota("Iniciando atencion");
+        CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.EN_ATENCION, "Iniciando atencion");
 
-        SolicitudResponse response = SolicitudResponse.builder()
-                .id(1L)
-                .estado(EstadoSolicitud.EN_ATENCION)
-                .build();
+        SolicitudResponse response = new SolicitudResponse(
+                1L, null, null, null, null, null, null, null, null,
+                null, null, null, EstadoSolicitud.EN_ATENCION, null, null
+        );
 
         when(solicitudService.cambiarEstado(eq(1L), any(CambiarEstadoRequest.class), anyString()))
                 .thenReturn(response);
@@ -326,8 +321,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cambiar estado con transicion invalida retorna 400")
     void cambiarEstado_transicionInvalida_retorna400() throws Exception {
-        CambiarEstadoRequest request = new CambiarEstadoRequest();
-        request.setNuevoEstado(EstadoSolicitud.CERRADA);
+        CambiarEstadoRequest request = new CambiarEstadoRequest(EstadoSolicitud.CERRADA, null);
 
         when(solicitudService.cambiarEstado(eq(1L), any(CambiarEstadoRequest.class), anyString()))
                 .thenThrow(new BadRequestException("Transición de estado inválida"));
@@ -341,8 +335,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cambiar estado sin nuevo estado retorna 400")
     void cambiarEstado_sinNuevoEstado_retorna400() throws Exception {
-        CambiarEstadoRequest request = new CambiarEstadoRequest();
-        request.setNota("Nota sin estado");
+        CambiarEstadoRequest request = new CambiarEstadoRequest(null, "Nota sin estado");
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/estado")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -353,17 +346,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Asignar responsable exitoso retorna 201 CREATED")
     void asignarResponsable_conDatosValidos_retorna201() throws Exception {
-        AsignarResponsableRequest request = new AsignarResponsableRequest();
-        request.setResponsableId(1L);
-        request.setNotaAsignacion("Asignacion urgente");
+        AsignarResponsableRequest request = new AsignarResponsableRequest(1L, "Asignacion urgente");
 
-        AsignacionResponse response = AsignacionResponse.builder()
-                .id(1L)
-                .solicitudId(1L)
-                .usuarioId(1L)
-                .activa(true)
-                .fechaAsignacion(Instant.now())
-                .build();
+        AsignacionResponse response = new AsignacionResponse(1L, 1L, 1L, Instant.now(), true);
 
         when(solicitudService.asignarResponsable(eq(1L), any(AsignarResponsableRequest.class), anyString()))
                 .thenReturn(response);
@@ -380,8 +365,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Asignar usuario inactivo retorna 400")
     void asignarResponsable_usuarioInactivo_retorna400() throws Exception {
-        AsignarResponsableRequest request = new AsignarResponsableRequest();
-        request.setResponsableId(1L);
+        AsignarResponsableRequest request = new AsignarResponsableRequest(1L, null);
 
         when(solicitudService.asignarResponsable(eq(1L), any(AsignarResponsableRequest.class), anyString()))
                 .thenThrow(new BadRequestException("No se puede asignar un usuario inactivo"));
@@ -395,8 +379,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Asignar sin responsable ID retorna 400")
     void asignarResponsable_sinResponsableId_retorna400() throws Exception {
-        AsignarResponsableRequest request = new AsignarResponsableRequest();
-        request.setNotaAsignacion("Nota sin responsable");
+        AsignarResponsableRequest request = new AsignarResponsableRequest(null, "Nota sin responsable");
 
         mockMvc.perform(post("/api/v1/solicitudes/1/asignar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -407,16 +390,16 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cerrar solicitud exitosa retorna 200 OK")
     void cerrarSolicitud_conDatosValidos_retorna200() throws Exception {
-        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
-        request.setResolucion("Solicitud resuelta satisfactoriamente");
-        request.setNotasCierre("Se homologaron 3 materias");
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest(
+                "Solicitud resuelta satisfactoriamente", "Se homologaron 3 materias"
+        );
 
-        SolicitudResponse response = SolicitudResponse.builder()
-                .id(1L)
-                .estado(EstadoSolicitud.CERRADA)
-                .resolucion("Solicitud resuelta satisfactoriamente")
-                .notasCierre("Se homologaron 3 materias")
-                .build();
+        SolicitudResponse response = new SolicitudResponse(
+                1L, null, null, null, null, null, null, null, null, null, null, null,
+                EstadoSolicitud.CERRADA,
+                "Solicitud resuelta satisfactoriamente",
+                "Se homologaron 3 materias"
+        );
 
         when(solicitudService.cerrarSolicitud(eq(1L), any(CerrarSolicitudRequest.class), anyString()))
                 .thenReturn(response);
@@ -432,8 +415,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cerrar solicitud no atendida retorna 400")
     void cerrarSolicitud_noAtendida_retorna400() throws Exception {
-        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
-        request.setResolucion("Resolucion");
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest("Resolucion valida ok", null);
 
         when(solicitudService.cerrarSolicitud(eq(1L), any(CerrarSolicitudRequest.class), anyString()))
                 .thenThrow(new BadRequestException("No se puede cerrar la solicitud"));
@@ -447,8 +429,7 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Cerrar solicitud sin resolucion retorna 400")
     void cerrarSolicitud_sinResolucion_retorna400() throws Exception {
-        CerrarSolicitudRequest request = new CerrarSolicitudRequest();
-        request.setNotasCierre("Notas sin resolucion");
+        CerrarSolicitudRequest request = new CerrarSolicitudRequest(null, "Notas sin resolucion");
 
         mockMvc.perform(patch("/api/v1/solicitudes/1/cerrar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -459,13 +440,9 @@ class SolicitudControllerTest {
     @Test
     @DisplayName("Obtener historial exitoso retorna 200 OK")
     void obtenerHistorial_conSolicitudExistente_retorna200() throws Exception {
-        HistorialResponse historial = HistorialResponse.builder()
-                .id(1L)
-                .fechaHora(Instant.now())
-                .accion("REGISTRO")
-                .usuarioResponsable("admin")
-                .observaciones("Solicitud creada")
-                .build();
+        HistorialResponse historial = new HistorialResponse(
+                1L, Instant.now(), "REGISTRO", "admin", "Solicitud creada"
+        );
 
         when(solicitudService.obtenerHistorial(1L)).thenReturn(List.of(historial));
 
