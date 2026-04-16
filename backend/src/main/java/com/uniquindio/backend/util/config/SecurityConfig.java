@@ -32,6 +32,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/usuarios/signup").permitAll()
                 // Swagger/OpenAPI endpoints
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/openapi.yaml", "/swagger-ui.html").permitAll()
                 // Usuario endpoints - ADMINISTRADOR only
@@ -43,12 +44,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*/historial").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/clasificar").hasRole("GESTOR")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/estado").hasRole("GESTOR")
-                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/*/asignar").hasRole("GESTOR")
-                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/cerrar").hasRole("GESTOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/clasificar").hasAnyRole("GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/estado").hasAnyRole("GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/*/asignar").hasAnyRole("GESTOR", "ADMINISTRADOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/solicitudes/*/cerrar").hasAnyRole("GESTOR", "ADMINISTRADOR")
                 // IA endpoints - Role based access
-                .requestMatchers(HttpMethod.POST, "/api/v1/ia/sugerir-clasificacion").hasRole("GESTOR")
+                .requestMatchers(HttpMethod.POST, "/api/v1/ia/sugerir-clasificacion").hasAnyRole("GESTOR", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/ia/solicitudes/*/resumen").hasAnyRole("SOLICITANTE", "GESTOR", "ADMINISTRADOR")
                 // All other requests require authentication
                 .anyRequest().authenticated()

@@ -3,6 +3,7 @@ package com.uniquindio.backend.controller;
 import com.uniquindio.backend.model.dto.request.CambiarEstadoUsuarioRequest;
 import com.uniquindio.backend.model.dto.request.CrearUsuarioRequest;
 import com.uniquindio.backend.model.dto.request.LoginRequest;
+import com.uniquindio.backend.model.dto.request.SignupRequest;
 import com.uniquindio.backend.model.dto.response.LoginResponse;
 import com.uniquindio.backend.model.dto.response.UsuarioResponse;
 import com.uniquindio.backend.service.UsuarioService;
@@ -25,6 +26,12 @@ public class UsuarioController {
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = usuarioService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<UsuarioResponse> signup(@Valid @RequestBody SignupRequest request) {
+        UsuarioResponse response = usuarioService.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping

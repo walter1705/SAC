@@ -3,9 +3,11 @@ package com.uniquindio.backend.service;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
 import com.uniquindio.backend.model.Usuario;
+import com.uniquindio.backend.model.enums.RolUsuario;
 import com.uniquindio.backend.model.dto.request.CambiarEstadoUsuarioRequest;
 import com.uniquindio.backend.model.dto.request.CrearUsuarioRequest;
 import com.uniquindio.backend.model.dto.request.LoginRequest;
+import com.uniquindio.backend.model.dto.request.SignupRequest;
 import com.uniquindio.backend.model.dto.response.LoginResponse;
 import com.uniquindio.backend.model.dto.response.UsuarioResponse;
 import com.uniquindio.backend.repository.UsuarioRepository;
@@ -78,6 +80,31 @@ public class UsuarioService {
                 .contrasena(hashedPassword)
                 .email(request.email())
                 .rol(request.rol())
+                .activo(true)
+                .build();
+
+        Usuario saved = usuarioRepository.save(usuario);
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public UsuarioResponse signup(SignupRequest request) {
+        if (usuarioRepository.existsByNombreUsuario(request.nombreUsuario())) {
+            throw new BadRequestException("El nombre de usuario ya existe: " + request.nombreUsuario());
+        }
+
+        if (usuarioRepository.existsByEmail(request.email())) {
+            throw new BadRequestException("El email ya existe: " + request.email());
+        }
+
+        String hashedPassword = BCrypt.withDefaults().hashToString(12, request.contrasena().toCharArray());
+
+        Usuario usuario = Usuario.builder()
+                .nombreCompleto(request.nombreCompleto())
+                .nombreUsuario(request.nombreUsuario())
+                .contrasena(hashedPassword)
+                .email(request.email())
+                .rol(RolUsuario.SOLICITANTE)
                 .activo(true)
                 .build();
 
