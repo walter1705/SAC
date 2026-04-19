@@ -9,10 +9,10 @@ import java.time.Instant;
 
 public record SolicitudResponse(
         Long id,
-        String estudianteNombre,
-        String estudianteCorreo,
-        String estudianteTelefono,
-        String estudianteIdentificacion,
+        String solicitanteNombre,
+        String solicitanteCorreo,
+        String solicitanteTelefono,
+        String solicitanteIdentificacion,
         String asunto,
         String descripcion,
         CanalOrigen canalOrigen,

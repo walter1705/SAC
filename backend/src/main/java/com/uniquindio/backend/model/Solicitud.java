@@ -25,16 +25,16 @@ public class Solicitud {
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String estudianteNombre;
+    private String solicitanteNombre;
 
     @Column(nullable = false, length = 100)
-    private String estudianteCorreo;
+    private String solicitanteCorreo;
 
     @Column(nullable = false, length = 20)
-    private String estudianteTelefono;
+    private String solicitanteTelefono;
 
     @Column(nullable = false, length = 50)
-    private String estudianteIdentificacion;
+    private String solicitanteIdentificacion;
 
     @Column(nullable = false, length = 200)
     private String asunto;

@@ -1,0 +1,582 @@
+{
+  "info": {
+    "name": "SAC Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" },
+    { "key": "solicitudId", "value": "1", "type": "string" },
+    { "key": "usuarioId", "value": "2", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Flujo Completo",
+      "item": [
+        {
+          "name": "1. Login GESTOR",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombreUsuario\": \"gestor\",\n  \"contrasena\": \"gestor123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/usuarios/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "usuarios", "login"]
+            }
+          }
+        },
+        {
+          "name": "2. Crear Solicitud",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"solicitanteNombre\": \"María González\",\n  \"solicitanteCorreo\": \"maria.gonzalez@uniquindio.edu.co\",\n  \"solicitanteTelefono\": \"3001234567\",\n  \"solicitanteIdentificacion\": \"1094567890\",\n  \"asunto\": \"Cancelación de Cálculo II por motivos médicos\",\n  \"descripcion\": \"Solicito cancelación de Cálculo II debido a intervención quirúrgica que me impide asistir antes del cierre del período académico.\",\n  \"canalOrigen\": \"SAC\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes"]
+            }
+          }
+        },
+        {
+          "name": "3. Ver Solicitud Creada",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Clasificar Solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"CANCELACION\",\n  \"prioridad\": \"ALTA\",\n  \"notaClasificacion\": \"CANCELACION cerca de fecha límite, requiere atención inmediata.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/clasificar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "clasificar"]
+            }
+          }
+        },
+        {
+          "name": "5. Asignar Responsable",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"responsableId\": {{usuarioId}},\n  \"notaAsignacion\": \"Asignado por experiencia en trámites de cancelación.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/asignar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "asignar"]
+            }
+          }
+        },
+        {
+          "name": "6. Cambiar Estado EN_ATENCION",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"EN_ATENCION\",\n  \"nota\": \"Iniciando atención de la solicitud.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "estado"]
+            }
+          }
+        },
+        {
+          "name": "7. Cambiar Estado ATENDIDA",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"ATENDIDA\",\n  \"nota\": \"La solicitud fue procesada correctamente.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "estado"]
+            }
+          }
+        },
+        {
+          "name": "8. Cerrar Solicitud",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolucion\": \"Se aprobó la cancelación de Cálculo II. El estudiante debe presentar los documentos médicos en la oficina de registro antes del viernes.\",\n  \"notasCierre\": \"Solicitud resuelta satisfactoriamente.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/cerrar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "cerrar"]
+            }
+          }
+        },
+        {
+          "name": "9. Ver Historial Completo",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/historial",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "historial"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Endpoints IA",
+      "item": [
+        {
+          "name": "Sugerir Clasificación",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Necesito cancelar Cálculo II porque tuve una cirugía y no puedo asistir a clases antes del cierre del período académico.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ia/sugerir-clasificacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ia", "sugerir-clasificacion"]
+            }
+          }
+        },
+        {
+          "name": "Sugerir Clasificación Caso HOMOLOGACION",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Vengo de otra universidad y deseo homologar las materias de Cálculo I y Álgebra Lineal que ya cursé y aprobé con nota de 4.0 o superior.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ia/sugerir-clasificacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ia", "sugerir-clasificacion"]
+            }
+          }
+        },
+        {
+          "name": "Sugerir Clasificación Caso CONSULTA",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Quisiera saber cuál es el horario de atención de la oficina de registro académico y qué documentos necesito para hacer un trámite.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ia/sugerir-clasificacion",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ia", "sugerir-clasificacion"]
+            }
+          }
+        },
+        {
+          "name": "Generar Resumen de Solicitud",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ia/solicitudes/{{solicitudId}}/resumen",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "ia", "solicitudes", "{{solicitudId}}", "resumen"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Todos los Endpoints Disponibles",
+      "item": [
+        {
+          "name": "Autenticación",
+          "item": [
+            {
+              "name": "Login",
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreUsuario\": \"admin\",\n  \"contrasena\": \"admin123\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios", "login"]
+                }
+              }
+            },
+            {
+              "name": "Signup",
+              "request": {
+                "auth": { "type": "noauth" },
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreCompleto\": \"Carlos Pérez\",\n  \"nombreUsuario\": \"cperez\",\n  \"contrasena\": \"MiClave@2026\",\n  \"email\": \"carlos.perez@uniquindio.edu.co\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios", "signup"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usuarios",
+          "item": [
+            {
+              "name": "Listar Usuarios Activos",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios"]
+                }
+              }
+            },
+            {
+              "name": "Crear Usuario",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombreCompleto\": \"Ana Pérez\",\n  \"nombreUsuario\": \"aperez\",\n  \"contrasena\": \"N3wUs3r@2026\",\n  \"email\": \"ana.perez@uniquindio.edu.co\",\n  \"rol\": \"GESTOR\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios"]
+                }
+              }
+            },
+            {
+              "name": "Activar Desactivar Usuario",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"activo\": false\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/usuarios/{{usuarioId}}/estado",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "usuarios", "{{usuarioId}}", "estado"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Solicitudes",
+          "item": [
+            {
+              "name": "Crear Solicitud",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"solicitanteNombre\": \"María González\",\n  \"solicitanteCorreo\": \"maria.gonzalez@uniquindio.edu.co\",\n  \"solicitanteTelefono\": \"3001234567\",\n  \"solicitanteIdentificacion\": \"1094567890\",\n  \"asunto\": \"Solicitud de homologación de materias\",\n  \"descripcion\": \"Deseo homologar las materias Cálculo I y Álgebra Lineal que cursé en mi universidad anterior con nota superior a 4.0.\",\n  \"canalOrigen\": \"SAC\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes"]
+                }
+              }
+            },
+            {
+              "name": "Listar Solicitudes sin filtros",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes?page=0&size=20&sort=fechaHoraRegistro,desc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes"],
+                  "query": [
+                    { "key": "page", "value": "0" },
+                    { "key": "size", "value": "20" },
+                    { "key": "sort", "value": "fechaHoraRegistro,desc" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Listar Solicitudes filtro por estado",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes?estado=REGISTRADA&page=0&size=20",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes"],
+                  "query": [
+                    { "key": "estado", "value": "REGISTRADA" },
+                    { "key": "tipo", "value": "", "disabled": true },
+                    { "key": "prioridad", "value": "", "disabled": true },
+                    { "key": "responsable", "value": "", "disabled": true },
+                    { "key": "page", "value": "0" },
+                    { "key": "size", "value": "20" }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Obtener Solicitud por ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}"]
+                }
+              }
+            },
+            {
+              "name": "Clasificar Solicitud",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipo\": \"HOMOLOGACION\",\n  \"prioridad\": \"ALTA\",\n  \"notaClasificacion\": \"HOMOLOGACION con documentación completa, prioridad alta por política institucional.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/clasificar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "clasificar"]
+                }
+              }
+            },
+            {
+              "name": "Cambiar Estado",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nuevoEstado\": \"EN_ATENCION\",\n  \"nota\": \"Iniciando atención de la solicitud.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/estado",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "estado"]
+                }
+              }
+            },
+            {
+              "name": "Asignar Responsable",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"responsableId\": {{usuarioId}},\n  \"notaAsignacion\": \"Asignado por experiencia en trámites de homologación.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/asignar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "asignar"]
+                }
+              }
+            },
+            {
+              "name": "Cerrar Solicitud",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"resolucion\": \"Se aprobó la homologación de Cálculo I y Álgebra Lineal. El solicitante debe presentar los certificados en la oficina de registro antes del viernes.\",\n  \"notasCierre\": \"Solicitud resuelta satisfactoriamente.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/cerrar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "cerrar"]
+                }
+              }
+            },
+            {
+              "name": "Ver Historial de Auditoria",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/solicitudes/{{solicitudId}}/historial",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "solicitudes", "{{solicitudId}}", "historial"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "IA Referencia",
+          "item": [
+            {
+              "name": "Sugerir Clasificación",
+              "request": {
+                "method": "POST",
+                "header": [
+                  { "key": "Content-Type", "value": "application/json" },
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"descripcion\": \"Necesito cancelar Cálculo II porque tuve una cirugía y no puedo asistir a clases antes del cierre del período académico.\"\n}",
+                  "options": { "raw": { "language": "json" } }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ia/sugerir-clasificacion",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "ia", "sugerir-clasificacion"]
+                }
+              }
+            },
+            {
+              "name": "Generar Resumen de Solicitud",
+              "request": {
+                "method": "GET",
+                "header": [
+                  { "key": "Authorization", "value": "Bearer {{token}}" }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ia/solicitudes/{{solicitudId}}/resumen",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "ia", "solicitudes", "{{solicitudId}}", "resumen"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

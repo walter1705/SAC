@@ -115,7 +115,7 @@ class SolicitudControllerTest {
     void setUp() {
         testSolicitudResponse = new SolicitudResponse(
                 1L,
-                "Pedro Estudiante",
+                "Pedro Solicitante",
                 "pedro@uni.edu.co",
                 "3001234567",
                 "12345678",
@@ -141,7 +141,7 @@ class SolicitudControllerTest {
     @DisplayName("Crear solicitud exitosa retorna 201 CREATED")
     void crearSolicitud_conDatosValidos_retorna201() throws Exception {
         CrearSolicitudRequest request = new CrearSolicitudRequest(
-                "Pedro Estudiante",
+                "Pedro Solicitante",
                 "pedro@uni.edu.co",
                 "3001234567",
                 "12345678",
@@ -159,7 +159,7 @@ class SolicitudControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.estudianteNombre").value("Pedro Estudiante"))
+                .andExpect(jsonPath("$.solicitanteNombre").value("Pedro Solicitante"))
                 .andExpect(jsonPath("$.estado").value("REGISTRADA"));
     }
 
@@ -167,7 +167,7 @@ class SolicitudControllerTest {
     @DisplayName("Crear solicitud sin asunto retorna 400")
     void crearSolicitud_sinAsunto_retorna400() throws Exception {
         CrearSolicitudRequest request = new CrearSolicitudRequest(
-                "Pedro Estudiante",
+                "Pedro Solicitante",
                 "pedro@uni.edu.co",
                 "3001234567",
                 "12345678",
@@ -186,7 +186,7 @@ class SolicitudControllerTest {
     @DisplayName("Crear solicitud sin descripcion retorna 400")
     void crearSolicitud_sinDescripcion_retorna400() throws Exception {
         CrearSolicitudRequest request = new CrearSolicitudRequest(
-                "Pedro Estudiante",
+                "Pedro Solicitante",
                 "pedro@uni.edu.co",
                 "3001234567",
                 "12345678",
@@ -259,7 +259,7 @@ class SolicitudControllerTest {
         mockMvc.perform(get("/api/v1/solicitudes/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.estudianteNombre").value("Pedro Estudiante"));
+                .andExpect(jsonPath("$.solicitanteNombre").value("Pedro Solicitante"));
     }
 
     @Test

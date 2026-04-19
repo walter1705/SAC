@@ -82,10 +82,13 @@ paths:
             schema:
               $ref: '#/components/schemas/CrearSolicitudBody'
             example:
-              tipo: CANCELACION
-              descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+              solicitanteNombre: 'María González'
+              solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+              solicitanteTelefono: '3001234567'
+              solicitanteIdentificacion: '1094567890'
+              asunto: 'Cancelación de Cálculo II por motivos médicos'
+              descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica que me impide asistir antes del cierre del período.'
               canalOrigen: SAC
-              idSolicitante: '1094000001'
       responses:
         '201':
           description: Solicitud creada exitosamente
@@ -95,15 +98,20 @@ paths:
                 $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
-                tipo: CANCELACION
-                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                idSolicitante: '1094000001'
+                tipo: null
                 prioridad: null
-                justificacionPrioridad: null
+                notaClasificacion: null
                 estado: REGISTRADA
-                observacionCierre: null
+                resolucion: null
+                notasCierre: null
         '400':
           $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
@@ -186,25 +194,35 @@ paths:
               example:
                 content:
                   - id: 1
-                    tipo: CANCELACION
-                    descripcion: 'Cancelación de Cálculo II'
+                    solicitanteNombre: 'María González'
+                    solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                    solicitanteTelefono: '3001234567'
+                    solicitanteIdentificacion: '1094567890'
+                    asunto: 'Cancelación de Cálculo II por motivos médicos'
+                    descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                     canalOrigen: SAC
                     fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                    idSolicitante: '1094000001'
+                    tipo: CANCELACION
                     prioridad: ALTA
-                    justificacionPrioridad: 'CANCELACION cerca de fecha límite'
+                    notaClasificacion: 'CANCELACION cerca de fecha límite'
                     estado: CLASIFICADA
-                    observacionCierre: null
+                    resolucion: null
+                    notasCierre: null
                   - id: 2
-                    tipo: CONSULTA
-                    descripcion: 'Consulta sobre horario académico'
-                    canalOrigen: CORREO
+                    solicitanteNombre: 'Carlos Pérez'
+                    solicitanteCorreo: 'carlos.perez@uniquindio.edu.co'
+                    solicitanteTelefono: '3109876543'
+                    solicitanteIdentificacion: '1094000002'
+                    asunto: 'Consulta sobre horario académico'
+                    descripcion: 'Necesito saber el horario de atención de la oficina de registro.'
+                    canalOrigen: EMAIL
                     fechaHoraRegistro: '2026-03-01T11:00:00Z'
-                    idSolicitante: '1094000002'
+                    tipo: CONSULTA
                     prioridad: BAJA
-                    justificacionPrioridad: 'CONSULTA por defecto es BAJA'
+                    notaClasificacion: 'CONSULTA por defecto es BAJA'
                     estado: REGISTRADA
-                    observacionCierre: null
+                    resolucion: null
+                    notasCierre: null
                 pagina: 0
                 tamaño: 20
                 totalElementos: 2
@@ -237,15 +255,20 @@ paths:
                 $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
-                tipo: CANCELACION
-                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                idSolicitante: '1094000001'
+                tipo: CANCELACION
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
                 estado: CLASIFICADA
-                observacionCierre: null
+                resolucion: null
+                notasCierre: null
         '401':
           $ref: '#/components/responses/NoAutorizado'
         '403':
@@ -277,7 +300,7 @@ paths:
             example:
               tipo: CANCELACION
               prioridad: ALTA
-              justificacionPrioridad: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
+              notaClasificacion: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
       responses:
         '200':
           description: Solicitud clasificada exitosamente
@@ -287,15 +310,20 @@ paths:
                 $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
-                tipo: CANCELACION
-                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                idSolicitante: '1094000001'
+                tipo: CANCELACION
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
+                notaClasificacion: 'CANCELACION cerca de fecha límite – requiere atención inmediata'
                 estado: CLASIFICADA
-                observacionCierre: null
+                resolucion: null
+                notasCierre: null
         '400':
           $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
@@ -339,15 +367,20 @@ paths:
                 $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
-                tipo: CANCELACION
-                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                idSolicitante: '1094000001'
+                tipo: CANCELACION
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
                 estado: EN_ATENCION
-                observacionCierre: null
+                resolucion: null
+                notasCierre: null
         '400':
           description: Transición de estado inválida
           content:
@@ -434,7 +467,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CerrarSolicitudBody'
             example:
-              observacionCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
+              resolucion: 'Se aprobó la cancelación de Cálculo II por el comité académico.'
+              notasCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
       responses:
         '200':
           description: Solicitud cerrada exitosamente
@@ -444,15 +478,20 @@ paths:
                 $ref: '#/components/schemas/SolicitudResponse'
               example:
                 id: 1
-                tipo: CANCELACION
-                descripcion: 'Estudiante solicita cancelación de Cálculo II por motivos médicos'
+                solicitanteNombre: 'María González'
+                solicitanteCorreo: 'maria.gonzalez@uniquindio.edu.co'
+                solicitanteTelefono: '3001234567'
+                solicitanteIdentificacion: '1094567890'
+                asunto: 'Cancelación de Cálculo II por motivos médicos'
+                descripcion: 'Solicito cancelación de Cálculo II debido a intervención quirúrgica.'
                 canalOrigen: SAC
                 fechaHoraRegistro: '2026-03-01T10:30:00Z'
-                idSolicitante: '1094000001'
+                tipo: CANCELACION
                 prioridad: ALTA
-                justificacionPrioridad: 'CANCELACION cerca de fecha límite'
+                notaClasificacion: 'CANCELACION cerca de fecha límite'
                 estado: CERRADA
-                observacionCierre: 'Solicitud resuelta – cancelación aprobada por el comité académico'
+                resolucion: 'Se aprobó la cancelación de Cálculo II por el comité académico.'
+                notasCierre: 'Solicitud resuelta satisfactoriamente'
         '400':
           description: La solicitud no está en estado ATENDIDA o falta observación
           content:
@@ -541,8 +580,8 @@ paths:
             schema:
               $ref: '#/components/schemas/IniciarSesionBody'
             example:
-              username: 'jgarcia'
-              password: 'S3cur3P@ss!'
+              nombreUsuario: 'jgarcia'
+              contrasena: 'S3cur3P@ss!'
       responses:
         '200':
           description: Autenticación exitosa
@@ -553,7 +592,7 @@ paths:
               example:
                 token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
                 tipo: 'Bearer'
-                username: 'jgarcia'
+                nombreUsuario: 'jgarcia'
                 rol: GESTOR
                 expiraEn: 3600
         '400':
@@ -570,6 +609,45 @@ paths:
                 error: No Autorizado
                 message: 'Nombre de usuario o contraseña inválidos'
                 path: /api/v1/usuarios/login
+        '500':
+          $ref: '#/components/responses/ErrorInterno'
+
+  /api/v1/usuarios/signup:
+    post:
+      tags: [Usuarios]
+      summary: Registrarse como solicitante
+      description: |
+        Endpoint público. Permite a cualquier persona registrarse con rol `SOLICITANTE`.
+        El rol es asignado automáticamente por el sistema.
+      operationId: registrarSolicitante
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupBody'
+            example:
+              nombreCompleto: 'Carlos Pérez'
+              nombreUsuario: 'cperez'
+              contrasena: 'MiClave@2026'
+              email: 'carlos.perez@uniquindio.edu.co'
+      responses:
+        '201':
+          description: Cuenta de solicitante creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+              example:
+                id: 20
+                nombreCompleto: 'Carlos Pérez'
+                nombreUsuario: 'cperez'
+                email: 'carlos.perez@uniquindio.edu.co'
+                rol: SOLICITANTE
+                activo: true
+        '400':
+          $ref: '#/components/responses/SolicitudIncorrecta'
         '500':
           $ref: '#/components/responses/ErrorInterno'
 
@@ -594,20 +672,23 @@ paths:
                   $ref: '#/components/schemas/UsuarioResponse'
               example:
                 - id: 1
-                  username: 'admin'
+                  nombreCompleto: 'Administrador del Sistema'
+                  nombreUsuario: 'admin'
+                  email: 'admin@uniquindio.edu.co'
                   rol: ADMINISTRADOR
                   activo: true
-                  nombre: 'Administrador del Sistema'
                 - id: 5
-                  username: 'jgarcia'
+                  nombreCompleto: 'Juan García'
+                  nombreUsuario: 'jgarcia'
+                  email: 'juan.garcia@uniquindio.edu.co'
                   rol: GESTOR
                   activo: true
-                  nombre: 'Juan García'
                 - id: 8
-                  username: 'mrodriguez'
+                  nombreCompleto: 'María Rodríguez'
+                  nombreUsuario: 'mrodriguez'
+                  email: 'maria.rodriguez@uniquindio.edu.co'
                   rol: SOLICITANTE
                   activo: true
-                  nombre: 'María Rodríguez'
         '401':
           $ref: '#/components/responses/NoAutorizado'
         '403':
@@ -631,10 +712,11 @@ paths:
             schema:
               $ref: '#/components/schemas/CrearUsuarioBody'
             example:
-              username: 'aperez'
-              password: 'N3wUs3r@2026'
+              nombreCompleto: 'Ana Pérez'
+              nombreUsuario: 'aperez'
+              contrasena: 'N3wUs3r@2026'
+              email: 'ana.perez@uniquindio.edu.co'
               rol: GESTOR
-              nombre: 'Ana Pérez'
       responses:
         '201':
           description: Usuario creado exitosamente
@@ -644,10 +726,11 @@ paths:
                 $ref: '#/components/schemas/UsuarioResponse'
               example:
                 id: 12
-                username: 'aperez'
+                nombreCompleto: 'Ana Pérez'
+                nombreUsuario: 'aperez'
+                email: 'ana.perez@uniquindio.edu.co'
                 rol: GESTOR
                 activo: true
-                nombre: 'Ana Pérez'
         '400':
           $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
@@ -693,10 +776,11 @@ paths:
                 $ref: '#/components/schemas/UsuarioResponse'
               example:
                 id: 5
-                username: 'jgarcia'
+                nombreCompleto: 'Juan García'
+                nombreUsuario: 'jgarcia'
+                email: 'juan.garcia@uniquindio.edu.co'
                 rol: GESTOR
                 activo: false
-                nombre: 'Juan García'
         '400':
           $ref: '#/components/responses/SolicitudIncorrecta'
         '401':
@@ -910,37 +994,37 @@ components:
       type: object
       description: Payload para crear una nueva solicitud académica
       required:
-        - estudianteNombre
-        - estudianteCorreo
-        - estudianteTelefono
-        - estudianteIdentificacion
+        - solicitanteNombre
+        - solicitanteCorreo
+        - solicitanteTelefono
+        - solicitanteIdentificacion
         - asunto
         - descripcion
         - canalOrigen
       properties:
-        estudianteNombre:
+        solicitanteNombre:
           type: string
           minLength: 2
           maxLength: 100
-          description: Nombre completo del estudiante
+          description: Nombre completo del solicitante
           example: 'María González'
-        estudianteCorreo:
+        solicitanteCorreo:
           type: string
           format: email
           maxLength: 100
-          description: Correo electrónico del estudiante
+          description: Correo electrónico del solicitante
           example: 'maria.gonzalez@uniquindio.edu.co'
-        estudianteTelefono:
+        solicitanteTelefono:
           type: string
           minLength: 7
           maxLength: 20
-          description: Número de teléfono del estudiante
+          description: Número de teléfono del solicitante
           example: '3001234567'
-        estudianteIdentificacion:
+        solicitanteIdentificacion:
           type: string
           minLength: 1
           maxLength: 50
-          description: Número de identificación del estudiante
+          description: Número de identificación del solicitante
           example: '1094567890'
         asunto:
           type: string
@@ -1084,6 +1168,41 @@ components:
         rol:
           $ref: '#/components/schemas/RolUsuario'
 
+    SignupBody:
+      type: object
+      description: Payload para auto-registro como solicitante (rol asignado automáticamente)
+      required:
+        - nombreCompleto
+        - nombreUsuario
+        - contrasena
+        - email
+      properties:
+        nombreCompleto:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Nombre completo del solicitante
+          example: 'Carlos Pérez'
+        nombreUsuario:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nombre de usuario único
+          example: 'cperez'
+        contrasena:
+          type: string
+          minLength: 8
+          maxLength: 100
+          format: password
+          description: Contraseña (será encriptada del lado del servidor)
+          example: 'MiClave@2026'
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          description: Correo electrónico del solicitante
+          example: 'carlos.perez@uniquindio.edu.co'
+
     CambiarEstadoUsuarioBody:
       type: object
       description: Payload para activar o desactivar un usuario
@@ -1106,21 +1225,21 @@ components:
           format: int64
           description: ID único de la solicitud
           example: 1
-        estudianteNombre:
+        solicitanteNombre:
           type: string
-          description: Nombre completo del estudiante
+          description: Nombre completo del solicitante
           example: 'María González'
-        estudianteCorreo:
+        solicitanteCorreo:
           type: string
-          description: Correo electrónico del estudiante
+          description: Correo electrónico del solicitante
           example: 'maria.gonzalez@uniquindio.edu.co'
-        estudianteTelefono:
+        solicitanteTelefono:
           type: string
-          description: Número de teléfono del estudiante
+          description: Número de teléfono del solicitante
           example: '3001234567'
-        estudianteIdentificacion:
+        solicitanteIdentificacion:
           type: string
-          description: Número de identificación del estudiante
+          description: Número de identificación del solicitante
           example: '1094567890'
         asunto:
           type: string

@@ -84,10 +84,19 @@ public class IAService {
         """;
 
     public SugerirClasificacionResponse sugerirClasificacion(SugerirClasificacionRequest request) {
-        String prompt = String.format(PROMPT_CLASIFICACION, request.descripcion());
-        String respuesta = geminiClient.generarContenido(prompt);
-
-        return parsearRespuestaClasificacion(respuesta);
+        try {
+            String prompt = String.format(PROMPT_CLASIFICACION, request.descripcion());
+            String respuesta = geminiClient.generarContenido(prompt);
+            return parsearRespuestaClasificacion(respuesta);
+        } catch (IAServiceUnavailableException e) {
+            log.warn("IA no disponible para sugerencia de clasificación: {}", e.getMessage());
+            return new SugerirClasificacionResponse(
+                null,
+                null,
+                "Servicio de IA no disponible para este servicio. Clasifique la solicitud manualmente.",
+                0.0f
+            );
+        }
     }
 
     @Transactional(readOnly = true)
@@ -103,8 +112,8 @@ public class IAService {
 
         String prompt = String.format(PROMPT_RESUMEN,
             solicitud.getId(),
-            solicitud.getEstudianteNombre(),
-            solicitud.getEstudianteIdentificacion(),
+            solicitud.getSolicitanteNombre(),
+            solicitud.getSolicitanteIdentificacion(),
             solicitud.getAsunto(),
             solicitud.getDescripcion(),
             solicitud.getCanalOrigen(),
@@ -115,12 +124,43 @@ public class IAService {
             historialTexto
         );
 
-        String resumen = geminiClient.generarContenido(prompt);
+        try {
+            String resumen = geminiClient.generarContenido(prompt);
+            return new ResumenSolicitudResponse(solicitudId, resumen.trim(), Instant.now());
+        } catch (IAServiceUnavailableException e) {
+            log.warn("IA no disponible para resumen de solicitud {}: {}", solicitudId, e.getMessage());
+            return new ResumenSolicitudResponse(
+                solicitudId,
+                generarResumenManual(solicitud, historial, formatter),
+                Instant.now()
+            );
+        }
+    }
 
-        return new ResumenSolicitudResponse(
-            solicitudId,
-            resumen.trim(),
-            Instant.now()
+    private String generarResumenManual(Solicitud solicitud, List<Historial> historial, DateTimeFormatter formatter) {
+        String tipo = solicitud.getTipo() != null ? solicitud.getTipo().name() : "Sin clasificar";
+        String prioridad = solicitud.getPrioridad() != null ? solicitud.getPrioridad().name() : "Sin asignar";
+        String fechaRegistro = formatter.format(solicitud.getFechaHoraRegistro());
+        int totalAcciones = historial.size();
+
+        return String.format(
+            "[Servicio de IA no disponible — resumen generado sin inteligencia artificial]\n\n" +
+            "Solicitud #%d registrada el %s por %s (ID: %s) a través del canal %s.\n" +
+            "Asunto: \"%s\".\n" +
+            "Estado actual: %s | Tipo: %s | Prioridad: %s.\n" +
+            "%s",
+            solicitud.getId(),
+            fechaRegistro,
+            solicitud.getSolicitanteNombre(),
+            solicitud.getSolicitanteIdentificacion(),
+            solicitud.getCanalOrigen(),
+            solicitud.getAsunto(),
+            solicitud.getEstado(),
+            tipo,
+            prioridad,
+            totalAcciones == 0
+                ? "Sin acciones registradas en el historial."
+                : totalAcciones + " acción(es) registrada(s) en el historial."
         );
     }
 
