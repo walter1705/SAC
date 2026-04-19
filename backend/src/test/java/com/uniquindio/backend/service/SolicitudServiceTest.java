@@ -56,10 +56,10 @@ class SolicitudServiceTest {
     void setUp() {
         testSolicitud = Solicitud.builder()
                 .id(1L)
-                .estudianteNombre("Pedro Estudiante")
-                .estudianteCorreo("pedro@uni.edu.co")
-                .estudianteTelefono("3001234567")
-                .estudianteIdentificacion("12345678")
+                .solicitanteNombre("Pedro Solicitante")
+                .solicitanteCorreo("pedro@uni.edu.co")
+                .solicitanteTelefono("3001234567")
+                .solicitanteIdentificacion("12345678")
                 .asunto("Solicitud de homologacion")
                 .descripcion("Necesito homologar materias del programa anterior")
                 .canalOrigen(CanalOrigen.WEB)
@@ -85,7 +85,7 @@ class SolicitudServiceTest {
         @DisplayName("Crea solicitud exitosamente")
         void crearSolicitud_conDatosValidos_retornaSolicitudResponse() {
             CrearSolicitudRequest request = new CrearSolicitudRequest(
-                    "Pedro Estudiante",
+                    "Pedro Solicitante",
                     "pedro@uni.edu.co",
                     "3001234567",
                     "12345678",
@@ -105,7 +105,7 @@ class SolicitudServiceTest {
 
             assertThat(response).isNotNull();
             assertThat(response.id()).isEqualTo(1L);
-            assertThat(response.estudianteNombre()).isEqualTo("Pedro Estudiante");
+            assertThat(response.solicitanteNombre()).isEqualTo("Pedro Solicitante");
             assertThat(response.estado()).isEqualTo(EstadoSolicitud.REGISTRADA);
 
             verify(solicitudRepository).save(any(Solicitud.class));
@@ -166,7 +166,7 @@ class SolicitudServiceTest {
 
             assertThat(response).isNotNull();
             assertThat(response.id()).isEqualTo(1L);
-            assertThat(response.estudianteNombre()).isEqualTo("Pedro Estudiante");
+            assertThat(response.solicitanteNombre()).isEqualTo("Pedro Solicitante");
         }
 
         @Test

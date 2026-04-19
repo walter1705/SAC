@@ -38,10 +38,10 @@ public class SolicitudService {
     @Transactional
     public SolicitudResponse crearSolicitud(CrearSolicitudRequest request, String nombreUsuario) {
         Solicitud solicitud = Solicitud.builder()
-                .estudianteNombre(request.estudianteNombre())
-                .estudianteCorreo(request.estudianteCorreo())
-                .estudianteTelefono(request.estudianteTelefono())
-                .estudianteIdentificacion(request.estudianteIdentificacion())
+                .solicitanteNombre(request.solicitanteNombre())
+                .solicitanteCorreo(request.solicitanteCorreo())
+                .solicitanteTelefono(request.solicitanteTelefono())
+                .solicitanteIdentificacion(request.solicitanteIdentificacion())
                 .asunto(request.asunto())
                 .descripcion(request.descripcion())
                 .canalOrigen(request.canalOrigen())
@@ -227,10 +227,10 @@ public class SolicitudService {
     private SolicitudResponse toResponse(Solicitud solicitud) {
         return new SolicitudResponse(
                 solicitud.getId(),
-                solicitud.getEstudianteNombre(),
-                solicitud.getEstudianteCorreo(),
-                solicitud.getEstudianteTelefono(),
-                solicitud.getEstudianteIdentificacion(),
+                solicitud.getSolicitanteNombre(),
+                solicitud.getSolicitanteCorreo(),
+                solicitud.getSolicitanteTelefono(),
+                solicitud.getSolicitanteIdentificacion(),
                 solicitud.getAsunto(),
                 solicitud.getDescripcion(),
                 solicitud.getCanalOrigen(),
