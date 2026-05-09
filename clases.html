@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAC — Mapa de Clases</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --text: #e2e8f0;
+    --muted: #8892b0;
+    --accent: #7c6af9;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --blue: #60a5fa;
+    --orange: #fb923c;
+    --rose: #f87171;
+    --yellow: #facc15;
+    --teal: #2dd4bf;
+    --pink: #e879f9;
+    --cyan: #22d3ee;
+
+    --layer-controller: #7c6af9;
+    --layer-entity: #34d399;
+    --layer-dto-req: #60a5fa;
+    --layer-dto-res: #22d3ee;
+    --layer-repo: #fb923c;
+    --layer-service: #f87171;
+    --layer-config: #facc15;
+    --layer-security: #e879f9;
+    --layer-exception: #f43f5e;
+    --layer-enum: #a78bfa;
+    --layer-ai: #2dd4bf;
+    --layer-app: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+  .logo span { color: var(--muted); font-weight: 400; font-size: 0.85rem; margin-left: 0.5rem; }
+
+  #search {
+    flex: 1;
+    max-width: 400px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    color: var(--text);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--muted); }
+
+  .stats {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .stats strong { color: var(--text); }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    flex: 1;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.25rem 0;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+
+  .sidebar-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 0 1.25rem 0.5rem;
+  }
+
+  .layer-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.5rem 1.25rem;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: left;
+    border-radius: 0;
+  }
+  .layer-btn:hover { background: var(--surface2); color: var(--text); }
+  .layer-btn.active { background: var(--surface2); color: var(--text); }
+  .layer-btn .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .layer-btn .count {
+    margin-left: auto;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .layer-btn.active .count { background: var(--border); color: var(--text); }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+  .section-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+  .card-header {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-type-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 4px;
+    opacity: 0.9;
+  }
+  .card-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+  .card-pkg {
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: monospace;
+  }
+
+  .card-body {
+    padding: 0.85rem 1rem;
+  }
+
+  .card-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .annotations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .ann {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .ann-name {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 7px;
+    color: var(--accent2);
+    white-space: nowrap;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  .ann-desc {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+    padding-top: 2px;
+  }
+
+  /* ── FIELDS SECTION ── */
+  .fields-toggle {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    user-select: none;
+  }
+  .fields-toggle:hover { color: var(--text); }
+  .fields-toggle .arrow { transition: transform 0.2s; display: inline-block; }
+  .fields-toggle.open .arrow { transform: rotate(90deg); }
+
+  .fields-list {
+    display: none;
+    margin-top: 0.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .fields-list.open { display: flex; }
+
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.76rem;
+    padding: 0.2rem 0;
+  }
+  .field-name { font-family: monospace; color: var(--text); }
+  .field-type { color: var(--blue); font-family: monospace; font-size: 0.72rem; }
+  .field-anns { color: var(--muted); font-size: 0.7rem; }
+
+  /* ── EMPTY ── */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">SAC <span>Backend · Mapa de Clases</span></div>
+  <input id="search" type="text" placeholder="Buscar clase o anotación..." autocomplete="off" />
+  <div class="stats">
+    <strong id="visible-count">55</strong> clases · Spring Boot 4 / Java 21
+  </div>
+</header>
+
+<div class="layout">
+  <aside id="sidebar">
+    <div class="sidebar-label">Capas</div>
+    <button class="layer-btn active" data-layer="all">
+      <span class="dot" style="background:#94a3b8"></span>
+      Todas las capas
+      <span class="count" id="count-all">55</span>
+    </button>
+    <button class="layer-btn" data-layer="app">
+      <span class="dot" style="background:var(--layer-app)"></span>
+      Aplicación
+      <span class="count" id="count-app">1</span>
+    </button>
+    <button class="layer-btn" data-layer="controller">
+      <span class="dot" style="background:var(--layer-controller)"></span>
+      Controllers
+      <span class="count" id="count-controller">3</span>
+    </button>
+    <button class="layer-btn" data-layer="service">
+      <span class="dot" style="background:var(--layer-service)"></span>
+      Services
+      <span class="count" id="count-service">3</span>
+    </button>
+    <button class="layer-btn" data-layer="repo">
+      <span class="dot" style="background:var(--layer-repo)"></span>
+      Repositories
+      <span class="count" id="count-repo">4</span>
+    </button>
+    <button class="layer-btn" data-layer="entity">
+      <span class="dot" style="background:var(--layer-entity)"></span>
+      Entidades
+      <span class="count" id="count-entity">4</span>
+    </button>
+    <button class="layer-btn" data-layer="enum">
+      <span class="dot" style="background:var(--layer-enum)"></span>
+      Enums
+      <span class="count" id="count-enum">6</span>
+    </button>
+    <button class="layer-btn" data-layer="dto-req">
+      <span class="dot" style="background:var(--layer-dto-req)"></span>
+      DTOs · Request
+      <span class="count" id="count-dto-req">9</span>
+    </button>
+    <button class="layer-btn" data-layer="dto-res">
+      <span class="dot" style="background:var(--layer-dto-res)"></span>
+      DTOs · Response
+      <span class="count" id="count-dto-res">10</span>
+    </button>
+    <button class="layer-btn" data-layer="config">
+      <span class="dot" style="background:var(--layer-config)"></span>
+      Config
+      <span class="count" id="count-config">4</span>
+    </button>
+    <button class="layer-btn" data-layer="security">
+      <span class="dot" style="background:var(--layer-security)"></span>
+      Security
+      <span class="count" id="count-security">3</span>
+    </button>
+    <button class="layer-btn" data-layer="exception">
+      <span class="dot" style="background:var(--layer-exception)"></span>
+      Exceptions
+      <span class="count" id="count-exception">6</span>
+    </button>
+    <button class="layer-btn" data-layer="ai">
+      <span class="dot" style="background:var(--layer-ai)"></span>
+      IA / Gemini
+      <span class="count" id="count-ai">1</span>
+    </button>
+  </aside>
+
+  <main id="main-content">
+    <!-- Content rendered by JS -->
+  </main>
+</div>
+
+<script>
+const COLORS = {
+  app:        '#94a3b8',
+  controller: '#7c6af9',
+  service:    '#f87171',
+  repo:       '#fb923c',
+  entity:     '#34d399',
+  enum:       '#a78bfa',
+  'dto-req':  '#60a5fa',
+  'dto-res':  '#22d3ee',
+  config:     '#facc15',
+  security:   '#e879f9',
+  exception:  '#f43f5e',
+  ai:         '#2dd4bf',
+};
+
+const TYPE_LABELS = {
+  class: 'class',
+  interface: 'interface',
+  record: 'record',
+  enum: 'enum',
+  annotation: '@annotation',
+};
+
+const DATA = [
+  // ── APLICACIÓN ──────────────────────────────────────────────
+  {
+    layer: 'app',
+    name: 'BackendApplication',
+    type: 'class',
+    pkg: 'com.uniquindio.backend',
+    desc: 'Punto de entrada de la aplicación Spring Boot.',
+    annotations: [
+      { name: '@SpringBootApplication', desc: 'Combina @Configuration, @EnableAutoConfiguration y @ComponentScan. Activa toda la autoconfiguración de Spring Boot y escanea componentes del paquete base.' },
+    ],
+  },
+
+  // ── CONTROLLERS ─────────────────────────────────────────────
+  {
+    layer: 'controller',
+    name: 'SolicitudController',
+    type: 'class',
+    pkg: '...controller',
+    desc: 'Expone endpoints REST para el ciclo de vida completo de solicitudes: crear, listar, clasificar, cambiar estado, asignar responsable, cerrar y ver historial.',
+    annotations: [
+      { name: '@RestController', desc: 'Combina @Controller + @ResponseBody. Cada método devuelve datos serializados como JSON directamente en el body HTTP.' },
+      { name: '@RequestMapping', desc: 'Define la ruta base /api/v1/solicitudes para todos los endpoints del controlador.' },
+      { name: '@RequiredArgsConstructor', desc: '(Lombok) Genera constructor con todos los campos final — inyección de dependencias via constructor.' },
+      { name: '@PostMapping', desc: 'Mapea POST /api/v1/solicitudes → crearSolicitud.' },
+      { name: '@GetMapping', desc: 'Mapea GET con soporte de filtros opcionales (estado, tipo, prioridad, responsable) y paginación.' },
+      { name: '@PatchMapping', desc: 'Usado en /clasificar, /estado y /cerrar para actualizaciones parciales de la solicitud.' },
+      { name: '@PathVariable', desc: 'Extrae el {id} de la URL y lo inyecta como parámetro Long.' },
+      { name: '@RequestBody', desc: 'Deserializa el JSON del body HTTP en el DTO de request correspondiente.' },
+      { name: '@RequestParam', desc: 'Parámetros opcionales de query string: estado, tipo, prioridad, responsable, page, size, sort.' },
+      { name: '@Valid', desc: 'Activa Bean Validation sobre el DTO recibido. Si falla, lanza MethodArgumentNotValidException.' },
+    ],
+  },
+  {
+    layer: 'controller',
+    name: 'UsuarioController',
+    type: 'class',
+    pkg: '...controller',
+    desc: 'Endpoints REST para gestión de usuarios: login, listar activos, crear y cambiar estado.',
+    annotations: [
+      { name: '@RestController', desc: 'Marca la clase como controlador REST — respuestas serializadas a JSON automáticamente.' },
+      { name: '@RequestMapping', desc: 'Ruta base /api/v1/usuarios.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyección de UsuarioService via constructor generado por Lombok.' },
+      { name: '@PostMapping("/login")', desc: 'Login público. Devuelve JWT si las credenciales son válidas.' },
+      { name: '@GetMapping', desc: 'Lista usuarios activos. Requiere rol ADMINISTRADOR (SecurityConfig).' },
+      { name: '@PostMapping', desc: 'Crea un nuevo usuario. Requiere rol ADMINISTRADOR.' },
+      { name: '@PatchMapping("/{id}/estado")', desc: 'Activa o desactiva un usuario. Requiere rol ADMINISTRADOR.' },
+      { name: '@Valid / @RequestBody', desc: 'Valida y deserializa el body en el DTO correspondiente.' },
+      { name: '@PathVariable', desc: 'Extrae el ID del usuario de la URL.' },
+    ],
+  },
+  {
+    layer: 'controller',
+    name: 'IAController',
+    type: 'class',
+    pkg: '...controller',
+    desc: 'Endpoints REST para funcionalidades de IA: sugerir clasificación de una solicitud y generar resumen narrativo.',
+    annotations: [
+      { name: '@RestController', desc: 'Controlador REST — respuestas JSON directas.' },
+      { name: '@RequestMapping', desc: 'Ruta base /api/v1/ia.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyección de IAService via constructor.' },
+      { name: '@PostMapping("/sugerir-clasificacion")', desc: 'Acepta descripción y devuelve tipo+prioridad sugeridos por Gemini. Solo GESTOR.' },
+      { name: '@GetMapping("/solicitudes/{id}/resumen")', desc: 'Genera resumen narrativo de una solicitud usando IA. Accesible a todos los roles.' },
+      { name: '@Valid / @RequestBody', desc: 'Valida SugerirClasificacionRequest antes de invocar el servicio.' },
+      { name: '@PathVariable', desc: 'Extrae el ID de solicitud para el resumen.' },
+    ],
+  },
+
+  // ── SERVICES ────────────────────────────────────────────────
+  {
+    layer: 'service',
+    name: 'SolicitudService',
+    type: 'class',
+    pkg: '...service',
+    desc: 'Lógica de negocio de solicitudes. Implementa la máquina de estados (REGISTRADA→CLASIFICADA→EN_ATENCION→ATENDIDA→CERRADA), registro de historial inmutable y asignación de responsables.',
+    annotations: [
+      { name: '@Service', desc: 'Marca la clase como bean de servicio Spring, detectado por @ComponentScan.' },
+      { name: '@RequiredArgsConstructor', desc: 'Constructor con los 4 repositorios + UsuarioService inyectados automáticamente.' },
+      { name: '@Transactional', desc: 'Envuelve operaciones de escritura (crear, clasificar, cambiarEstado, asignar, cerrar) en una transacción BD. Rollback automático en excepción.' },
+      { name: '@Transactional(readOnly = true)', desc: 'Optimiza queries de solo lectura (listar, obtenerPorId, obtenerHistorial) desactivando el dirty-checking de JPA.' },
+    ],
+  },
+  {
+    layer: 'service',
+    name: 'UsuarioService',
+    type: 'class',
+    pkg: '...service',
+    desc: 'Lógica de negocio de usuarios: autenticación con BCrypt, creación con validación de unicidad, activación/desactivación.',
+    annotations: [
+      { name: '@Service', desc: 'Bean de servicio Spring.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta UsuarioRepository y JwtUtil.' },
+      { name: '@Transactional(readOnly = true)', desc: 'Usado en login, listarUsuariosActivos, findById y findByNombreUsuario.' },
+      { name: '@Transactional', desc: 'Usado en crearUsuario y cambiarEstadoUsuario para garantizar atomicidad.' },
+    ],
+  },
+  {
+    layer: 'service',
+    name: 'IAService',
+    type: 'class',
+    pkg: '...service',
+    desc: 'Orquesta las llamadas a Gemini API. Construye prompts, parsea respuestas JSON y aísla los fallos de IA del flujo principal.',
+    annotations: [
+      { name: '@Service', desc: 'Bean de servicio Spring.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta GeminiClient, repositorios y ObjectMapper.' },
+      { name: '@Slf4j', desc: '(Lombok) Genera campo estático log — usado para loggear errores de parseo de respuestas IA.' },
+      { name: '@Transactional(readOnly = true)', desc: 'Usado en generarResumen para leer solicitud e historial sin dirty-checking.' },
+    ],
+  },
+
+  // ── REPOSITORIES ────────────────────────────────────────────
+  {
+    layer: 'repo',
+    name: 'SolicitudRepository',
+    type: 'interface',
+    pkg: '...repository',
+    desc: 'Acceso a datos de solicitudes. Extiende JpaRepository y JpaSpecificationExecutor. Incluye query JPQL personalizada con filtros opcionales y paginación.',
+    annotations: [
+      { name: '@Repository', desc: 'Marca la interfaz como repositorio Spring. Activa traducción de excepciones de persistencia a DataAccessException.' },
+      { name: '@Query', desc: 'JPQL con LEFT JOIN a Asignacion para filtrar por responsable activo. Parámetros estado, tipo, prioridad y responsableId son opcionales (IS NULL bypass).' },
+      { name: '@Param', desc: 'Vincula los parámetros del método con los named parameters del JPQL (:estado, :tipo, :prioridad, :responsableId).' },
+    ],
+  },
+  {
+    layer: 'repo',
+    name: 'UsuarioRepository',
+    type: 'interface',
+    pkg: '...repository',
+    desc: 'Acceso a datos de usuarios. Métodos derivados de Spring Data para búsqueda por username/email y validación de unicidad.',
+    annotations: [
+      { name: '@Repository', desc: 'Bean repositorio con traducción de excepciones JPA.' },
+    ],
+  },
+  {
+    layer: 'repo',
+    name: 'AsignacionRepository',
+    type: 'interface',
+    pkg: '...repository',
+    desc: 'Acceso a datos de asignaciones. Permite buscar asignaciones activas por solicitud o por usuario.',
+    annotations: [
+      { name: '@Repository', desc: 'Bean repositorio Spring Data JPA.' },
+    ],
+  },
+  {
+    layer: 'repo',
+    name: 'HistorialRepository',
+    type: 'interface',
+    pkg: '...repository',
+    desc: 'Acceso al historial de acciones. Devuelve entradas ordenadas cronológicamente por fecha.',
+    annotations: [
+      { name: '@Repository', desc: 'Bean repositorio Spring Data JPA.' },
+    ],
+  },
+
+  // ── ENTITIES ────────────────────────────────────────────────
+  {
+    layer: 'entity',
+    name: 'Solicitud',
+    type: 'class',
+    pkg: '...model',
+    desc: 'Entidad principal. Representa una solicitud académica con datos del estudiante, estado actual, tipo, prioridad y canal de origen. Tabla: solicitudes.',
+    annotations: [
+      { name: '@Entity', desc: 'Marca la clase como entidad JPA — mapeada a una tabla de base de datos.' },
+      { name: '@Table', desc: 'Especifica nombre de tabla "solicitudes" e índices en estado, tipo y prioridad para acelerar filtros.' },
+      { name: '@Index', desc: 'idx_solicitud_estado, idx_solicitud_tipo, idx_solicitud_prioridad — optimizan las queries de listado con filtros.' },
+      { name: '@Getter / @Setter', desc: '(Lombok) Genera getters y setters para todos los campos.' },
+      { name: '@NoArgsConstructor / @AllArgsConstructor', desc: '(Lombok) Constructor vacío (requerido por JPA) y constructor completo.' },
+      { name: '@Builder', desc: '(Lombok) Patrón builder — usado extensamente en SolicitudService para crear instancias.' },
+      { name: '@Id / @GeneratedValue', desc: 'Clave primaria con estrategia IDENTITY (autoincremento en PostgreSQL).' },
+      { name: '@Column', desc: 'Configura nullable=false, length y otras restricciones a nivel de columna.' },
+      { name: '@Enumerated(EnumType.STRING)', desc: 'Persiste los enums como texto (ej. "REGISTRADA") en vez de índice numérico — más legible y estable ante reordenamientos.' },
+      { name: '@PrePersist', desc: 'Hook JPA — asigna fechaHoraRegistro = Instant.now() justo antes de la primera inserción si no fue seteado.' },
+    ],
+  },
+  {
+    layer: 'entity',
+    name: 'Usuario',
+    type: 'class',
+    pkg: '...model',
+    desc: 'Entidad de usuario del sistema. Almacena credenciales (contraseña hasheada con BCrypt), rol y estado activo. Tabla: usuarios.',
+    annotations: [
+      { name: '@Entity', desc: 'Entidad JPA mapeada a la tabla "usuarios".' },
+      { name: '@Table', desc: 'Define nombre de tabla "usuarios".' },
+      { name: '@Getter / @Setter', desc: 'Getters y setters generados por Lombok.' },
+      { name: '@NoArgsConstructor / @AllArgsConstructor', desc: 'Constructores vacío y completo.' },
+      { name: '@Builder', desc: 'Builder — usado en DataSeeder y UsuarioService para construir instancias.' },
+      { name: '@Id / @GeneratedValue', desc: 'PK con autoincremento.' },
+      { name: '@Column(unique=true)', desc: 'nombreUsuario y email tienen restricción UNIQUE en BD.' },
+      { name: '@Enumerated(EnumType.STRING)', desc: 'El rol se persiste como string (ADMINISTRADOR, GESTOR, SOLICITANTE).' },
+      { name: '@Builder.Default', desc: 'El campo activo = true por defecto cuando se usa el builder sin setear el campo explícitamente.' },
+    ],
+  },
+  {
+    layer: 'entity',
+    name: 'Asignacion',
+    type: 'class',
+    pkg: '...model',
+    desc: 'Registro de asignación de un responsable (GESTOR) a una solicitud. Soporta historial — las anteriores quedan con activa=false. Tabla: asignaciones.',
+    annotations: [
+      { name: '@Entity', desc: 'Entidad JPA.' },
+      { name: '@Table + @Index', desc: 'Índice compuesto en (solicitud_id, activa) para búsquedas eficientes de asignación activa.' },
+      { name: '@Getter / @Setter / @Builder', desc: 'Lombok — getters, setters y builder pattern.' },
+      { name: '@ManyToOne(fetch=LAZY)', desc: 'Relación a Solicitud y Usuario con carga lazy — evita N+1 y cargas innecesarias.' },
+      { name: '@JoinColumn', desc: 'Define la FK: solicitud_id y usuario_id con nullable=false.' },
+      { name: '@Builder.Default', desc: 'activa=true por defecto al crear via builder.' },
+      { name: '@PrePersist', desc: 'Asigna fechaAsignacion = Instant.now() en la primera inserción.' },
+    ],
+  },
+  {
+    layer: 'entity',
+    name: 'Historial',
+    type: 'class',
+    pkg: '...model',
+    desc: 'Registro inmutable de auditoría. Cada acción sobre una solicitud genera una entrada. NUNCA se modifica — solo INSERT. Tabla: historial.',
+    annotations: [
+      { name: '@Entity', desc: 'Entidad JPA — tabla "historial".' },
+      { name: '@Getter / @Setter / @Builder', desc: 'Lombok — accesores y builder.' },
+      { name: '@NoArgsConstructor / @AllArgsConstructor', desc: 'Constructores requeridos por JPA y por tests.' },
+      { name: '@ManyToOne(fetch=LAZY)', desc: 'Relación a Solicitud con carga lazy.' },
+      { name: '@JoinColumn', desc: 'FK solicitud_id.' },
+      { name: '@Enumerated(EnumType.STRING)', desc: 'AccionHistorial persiste como string (REGISTRO, CLASIFICACION, etc.).' },
+      { name: '@PrePersist', desc: 'Asigna fechaHora = Instant.now() antes de la primera persistencia.' },
+    ],
+  },
+
+  // ── ENUMS ────────────────────────────────────────────────────
+  {
+    layer: 'enum',
+    name: 'EstadoSolicitud',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Estados del ciclo de vida de una solicitud. La máquina de estados en SolicitudService valida las transiciones.',
+    annotations: [],
+    values: ['REGISTRADA', 'CLASIFICADA', 'EN_ATENCION', 'ATENDIDA', 'CERRADA'],
+  },
+  {
+    layer: 'enum',
+    name: 'TipoSolicitud',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Categoría asignada durante la clasificación manual o sugerida por IA.',
+    annotations: [],
+    values: ['REGISTRO', 'HOMOLOGACION', 'CANCELACION', 'CUPOS', 'CONSULTA'],
+  },
+  {
+    layer: 'enum',
+    name: 'Prioridad',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Nivel de urgencia de la solicitud. La IA aplica reglas: CANCELACION/HOMOLOGACION → ALTA, CONSULTA → BAJA.',
+    annotations: [],
+    values: ['ALTA', 'MEDIA', 'BAJA'],
+  },
+  {
+    layer: 'enum',
+    name: 'RolUsuario',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Rol de un usuario en el sistema. SecurityConfig usa estos valores para control de acceso por endpoint.',
+    annotations: [],
+    values: ['ADMINISTRADOR', 'GESTOR', 'SOLICITANTE'],
+  },
+  {
+    layer: 'enum',
+    name: 'CanalOrigen',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Canal por el cual llegó la solicitud al sistema.',
+    annotations: [],
+    values: ['CSU', 'EMAIL', 'WEB', 'SAC', 'TELEFONICO', 'PRESENCIAL'],
+  },
+  {
+    layer: 'enum',
+    name: 'AccionHistorial',
+    type: 'enum',
+    pkg: '...model.enums',
+    desc: 'Tipo de acción registrada en el historial inmutable de una solicitud.',
+    annotations: [],
+    values: ['REGISTRO', 'CLASIFICACION', 'CAMBIO_ESTADO', 'ASIGNACION', 'CIERRE'],
+  },
+
+  // ── DTOs REQUEST ─────────────────────────────────────────────
+  {
+    layer: 'dto-req',
+    name: 'CrearSolicitudRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para crear una nueva solicitud. Valida datos completos del estudiante, asunto, descripción y canal.',
+    annotations: [
+      { name: '@NotBlank', desc: 'Rechaza null, vacío y solo espacios. Usado en nombre, correo, teléfono, identificación, asunto y descripción.' },
+      { name: '@Email', desc: 'Valida formato de correo electrónico.' },
+      { name: '@Size', desc: 'Controla longitud mínima y máxima de cada string.' },
+      { name: '@Pattern', desc: 'Teléfono acepta solo dígitos, +, -, espacios y paréntesis.' },
+      { name: '@NotNull', desc: 'canalOrigen no puede ser null (es un enum).' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'ClasificarSolicitudRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para clasificar una solicitud (solo desde estado REGISTRADA). Requiere tipo, prioridad y nota.',
+    annotations: [
+      { name: '@NotNull', desc: 'tipo y prioridad son enums obligatorios.' },
+      { name: '@NotBlank', desc: 'notaClasificacion no puede estar vacía.' },
+      { name: '@Size', desc: 'notaClasificacion: mínimo 5, máximo 500 caracteres.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'CambiarEstadoRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para avanzar el estado de una solicitud. La transición es validada por la máquina de estados en SolicitudService.',
+    annotations: [
+      { name: '@NotNull', desc: 'nuevoEstado es obligatorio.' },
+      { name: '@Size', desc: 'nota opcional, máximo 1000 caracteres.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'AsignarResponsableRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para asignar un GESTOR activo a una solicitud. Desactiva asignaciones previas.',
+    annotations: [
+      { name: '@NotNull', desc: 'responsableId es obligatorio.' },
+      { name: '@Size', desc: 'notaAsignacion opcional, máximo 500 caracteres.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'CerrarSolicitudRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para cerrar una solicitud (solo desde estado ATENDIDA). Requiere resolución, notas de cierre opcionales.',
+    annotations: [
+      { name: '@NotBlank', desc: 'resolución es obligatoria.' },
+      { name: '@Size', desc: 'resolución: 10-2000 chars. notasCierre: máx. 1000.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'CrearUsuarioRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para registrar un nuevo usuario. Valida nombre, credenciales, email y rol.',
+    annotations: [
+      { name: '@NotBlank', desc: 'nombreCompleto, nombreUsuario, contrasena y email son obligatorios.' },
+      { name: '@Email', desc: 'Valida formato de email.' },
+      { name: '@Size', desc: 'Longitudes: nombreCompleto (2-100), nombreUsuario (3-50), contrasena (8-100), email (máx. 100).' },
+      { name: '@NotNull', desc: 'rol es obligatorio.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'LoginRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Credenciales de autenticación: nombreUsuario y contraseña.',
+    annotations: [
+      { name: '@NotBlank', desc: 'Ambos campos son obligatorios.' },
+      { name: '@Size', desc: 'nombreUsuario (3-50), contrasena (8-100).' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'CambiarEstadoUsuarioRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para activar o desactivar un usuario.',
+    annotations: [
+      { name: '@NotNull', desc: 'activo (Boolean) no puede ser null.' },
+    ],
+  },
+  {
+    layer: 'dto-req',
+    name: 'SugerirClasificacionRequest',
+    type: 'record',
+    pkg: '...dto.request',
+    desc: 'Body para solicitar clasificación IA. Solo requiere la descripción de la solicitud.',
+    annotations: [
+      { name: '@NotBlank', desc: 'descripción es obligatoria.' },
+      { name: '@Size', desc: 'descripción: 10-2000 caracteres.' },
+    ],
+  },
+
+  // ── DTOs RESPONSE ─────────────────────────────────────────────
+  {
+    layer: 'dto-res',
+    name: 'SolicitudResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Proyección completa de una solicitud: datos del estudiante, estado, tipo, prioridad, resolución y notas.',
+    annotations: [],
+    fields: [
+      { name: 'id', type: 'Long' },
+      { name: 'estudianteNombre', type: 'String' },
+      { name: 'estudianteCorreo', type: 'String' },
+      { name: 'estudianteTelefono', type: 'String' },
+      { name: 'estudianteIdentificacion', type: 'String' },
+      { name: 'asunto', type: 'String' },
+      { name: 'descripcion', type: 'String' },
+      { name: 'canalOrigen', type: 'CanalOrigen' },
+      { name: 'fechaHoraRegistro', type: 'Instant' },
+      { name: 'tipo', type: 'TipoSolicitud' },
+      { name: 'prioridad', type: 'Prioridad' },
+      { name: 'notaClasificacion', type: 'String' },
+      { name: 'estado', type: 'EstadoSolicitud' },
+      { name: 'resolucion', type: 'String' },
+      { name: 'notasCierre', type: 'String' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'UsuarioResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Datos públicos de un usuario — excluye la contraseña.',
+    annotations: [],
+    fields: [
+      { name: 'id', type: 'Long' },
+      { name: 'nombreCompleto', type: 'String' },
+      { name: 'nombreUsuario', type: 'String' },
+      { name: 'email', type: 'String' },
+      { name: 'rol', type: 'RolUsuario' },
+      { name: 'activo', type: 'Boolean' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'LoginResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Token JWT de acceso con metadata del usuario autenticado.',
+    annotations: [],
+    fields: [
+      { name: 'token', type: 'String' },
+      { name: 'tipo', type: 'String ("Bearer")' },
+      { name: 'nombreUsuario', type: 'String' },
+      { name: 'rol', type: 'RolUsuario' },
+      { name: 'expiraEn', type: 'Integer (seg)' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'ErrorResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Estructura uniforme de error HTTP devuelta por GlobalExceptionHandler.',
+    annotations: [],
+    fields: [
+      { name: 'timestamp', type: 'Instant' },
+      { name: 'status', type: 'Integer' },
+      { name: 'error', type: 'String' },
+      { name: 'message', type: 'String' },
+      { name: 'path', type: 'String' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'AsignacionResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Resultado de asignar un responsable: IDs de solicitud, usuario, fecha y estado activo.',
+    annotations: [],
+    fields: [
+      { name: 'id', type: 'Long' },
+      { name: 'solicitudId', type: 'Long' },
+      { name: 'usuarioId', type: 'Long' },
+      { name: 'fechaAsignacion', type: 'Instant' },
+      { name: 'activa', type: 'Boolean' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'HistorialResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Entrada del historial de auditoría de una solicitud.',
+    annotations: [],
+    fields: [
+      { name: 'id', type: 'Long' },
+      { name: 'fechaHora', type: 'Instant' },
+      { name: 'accion', type: 'String' },
+      { name: 'usuarioResponsable', type: 'String' },
+      { name: 'observaciones', type: 'String' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'SolicitudesPaginadasResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Wrapper de paginación: lista de solicitudes + metadatos (página, tamaño, total).',
+    annotations: [],
+    fields: [
+      { name: 'content', type: 'List<SolicitudResponse>' },
+      { name: 'pagina', type: 'Integer' },
+      { name: 'tamaño', type: 'Integer' },
+      { name: 'totalElementos', type: 'Long' },
+      { name: 'totalPaginas', type: 'Integer' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'IaNoDisponibleResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Respuesta específica cuando la IA no está disponible (HTTP 503). Estructura similar a ErrorResponse pero separada para diferenciación semántica.',
+    annotations: [],
+    fields: [
+      { name: 'timestamp', type: 'Instant' },
+      { name: 'status', type: 'Integer (503)' },
+      { name: 'error', type: 'String' },
+      { name: 'message', type: 'String' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'SugerirClasificacionResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Sugerencia de IA: tipo, prioridad, justificación y nivel de confianza (0.0–1.0).',
+    annotations: [],
+    fields: [
+      { name: 'tipoSugerido', type: 'TipoSolicitud' },
+      { name: 'prioridadSugerida', type: 'Prioridad' },
+      { name: 'justificacion', type: 'String' },
+      { name: 'confianza', type: 'Float' },
+    ],
+  },
+  {
+    layer: 'dto-res',
+    name: 'ResumenSolicitudResponse',
+    type: 'record',
+    pkg: '...dto.response',
+    desc: 'Resumen narrativo generado por IA de una solicitud y su historial.',
+    annotations: [],
+    fields: [
+      { name: 'idSolicitud', type: 'Long' },
+      { name: 'resumen', type: 'String' },
+      { name: 'generadoEn', type: 'Instant' },
+    ],
+  },
+
+  // ── CONFIG ───────────────────────────────────────────────────
+  {
+    layer: 'config',
+    name: 'SecurityConfig',
+    type: 'class',
+    pkg: '...util.config',
+    desc: 'Define la cadena de filtros de seguridad HTTP: CSRF desactivado, CORS habilitado, sesión STATELESS, reglas de autorización por rol y endpoint.',
+    annotations: [
+      { name: '@Configuration', desc: 'Clase de configuración Spring — define @Bean methods.' },
+      { name: '@EnableWebSecurity', desc: 'Activa la infraestructura de seguridad web de Spring Security.' },
+      { name: '@EnableMethodSecurity', desc: 'Habilita @PreAuthorize y @PostAuthorize a nivel de método (aunque actualmente el control está en requestMatchers).' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta JwtAuthenticationFilter y JwtAuthenticationEntryPoint.' },
+      { name: '@Bean', desc: 'SecurityFilterChain — el bean principal que configura HTTP security.' },
+    ],
+  },
+  {
+    layer: 'config',
+    name: 'DataSeeder',
+    type: 'class',
+    pkg: '...util.config',
+    desc: 'Seed inicial de base de datos. Crea usuarios admin y gestor con contraseñas hasheadas si no existen. No corre en perfil "test".',
+    annotations: [
+      { name: '@Component', desc: 'Bean Spring detectado por @ComponentScan.' },
+      { name: '@Profile("!test")', desc: 'Excluye el seeder en el perfil "test" para no contaminar los tests de integración con H2.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta UsuarioRepository.' },
+      { name: '@Slf4j', desc: 'Logger para confirmar creación de usuarios al arrancar.' },
+    ],
+  },
+  {
+    layer: 'config',
+    name: 'JacksonConfig',
+    type: 'class',
+    pkg: '...util.config',
+    desc: 'Configura ObjectMapper global: soporte para java.time (JavaTimeModule) y serialización de fechas como ISO-8601 string en lugar de timestamp numérico.',
+    annotations: [
+      { name: '@Configuration', desc: 'Clase de configuración Spring.' },
+      { name: '@Bean', desc: 'Expone ObjectMapper como bean compartido — usado por Spring MVC, IAService y JwtAuthenticationEntryPoint.' },
+    ],
+  },
+  {
+    layer: 'config',
+    name: 'CorsConfig',
+    type: 'class',
+    pkg: '...util.config',
+    desc: 'Configura CORS: permite origen localhost:3000 (frontend Next.js), métodos GET/POST/PATCH/PUT/DELETE/OPTIONS y todos los headers.',
+    annotations: [
+      { name: '@Configuration', desc: 'Clase de configuración Spring.' },
+      { name: '@Bean', desc: 'CorsConfigurationSource — referenciado por SecurityConfig via Customizer.withDefaults().' },
+    ],
+  },
+
+  // ── SECURITY ─────────────────────────────────────────────────
+  {
+    layer: 'security',
+    name: 'JwtAuthenticationFilter',
+    type: 'class',
+    pkg: '...util.security',
+    desc: 'Filtro que se ejecuta UNA VEZ por request. Extrae el Bearer token, lo valida, recupera el usuario de BD y establece el SecurityContext.',
+    annotations: [
+      { name: '@Component', desc: 'Bean Spring — inyectado en SecurityConfig.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta JwtUtil y UsuarioRepository.' },
+    ],
+  },
+  {
+    layer: 'security',
+    name: 'JwtUtil',
+    type: 'class',
+    pkg: '...util.security',
+    desc: 'Utilidad JWT: genera tokens firmados con HMAC-SHA256, extrae claims (usuario, rol) y valida la firma y expiración.',
+    annotations: [
+      { name: '@Component', desc: 'Bean Spring singleton.' },
+      { name: '@Value("${jwt.secret}")', desc: 'Inyecta el secreto JWT desde application.properties.' },
+      { name: '@Value("${jwt.expiration:3600000}")', desc: 'Expiración en ms — default 1 hora si no está configurado.' },
+      { name: '@PostConstruct', desc: 'Se ejecuta después de la inyección. Construye la SecretKey HMAC-SHA256 padding a 32 bytes mínimo.' },
+    ],
+  },
+  {
+    layer: 'security',
+    name: 'JwtAuthenticationEntryPoint',
+    type: 'class',
+    pkg: '...util.security',
+    desc: 'Handler de autenticación fallida. Devuelve JSON 401 con estructura ErrorResponse cuando un request no autenticado intenta acceder a un recurso protegido.',
+    annotations: [
+      { name: '@Component', desc: 'Bean Spring — registrado en SecurityConfig como authenticationEntryPoint.' },
+      { name: '@RequiredArgsConstructor', desc: 'Inyecta ObjectMapper para serializar ErrorResponse a JSON.' },
+    ],
+  },
+
+  // ── EXCEPTIONS ───────────────────────────────────────────────
+  {
+    layer: 'exception',
+    name: 'GlobalExceptionHandler',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Maneja TODAS las excepciones del sistema y las mapea a respuestas HTTP estructuradas (ErrorResponse). Cubre: validaciones, negocio, seguridad y errores genéricos.',
+    annotations: [
+      { name: '@RestControllerAdvice', desc: 'Combina @ControllerAdvice + @ResponseBody. Intercepta excepciones lanzadas en cualquier @Controller y devuelve JSON.' },
+      { name: '@ExceptionHandler', desc: 'Mapea cada tipo de excepción a su HTTP status: BadRequest→400, NotFound→404, Unauthorized→401, Forbidden→403, IAUnavailable→503, Validation→400, MethodNotAllowed→405, Generic→500.' },
+    ],
+  },
+  {
+    layer: 'exception',
+    name: 'BadRequestException',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Excepción de negocio para datos inválidos o transiciones de estado incorrectas.',
+    annotations: [
+      { name: '@ResponseStatus(BAD_REQUEST)', desc: 'Marca la excepción con HTTP 400. GlobalExceptionHandler la intercepta antes para devolver ErrorResponse estructurado.' },
+    ],
+  },
+  {
+    layer: 'exception',
+    name: 'ResourceNotFoundException',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Lanzada cuando una entidad buscada por ID no existe en BD.',
+    annotations: [
+      { name: '@ResponseStatus(NOT_FOUND)', desc: 'HTTP 404.' },
+    ],
+  },
+  {
+    layer: 'exception',
+    name: 'UnauthorizedException',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Lanzada en fallos de autenticación (login inválido, cuenta desactivada).',
+    annotations: [
+      { name: '@ResponseStatus(UNAUTHORIZED)', desc: 'HTTP 401.' },
+    ],
+  },
+  {
+    layer: 'exception',
+    name: 'ForbiddenException',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Lanzada cuando el usuario autenticado no puede determinarse correctamente en el controller.',
+    annotations: [
+      { name: '@ResponseStatus(FORBIDDEN)', desc: 'HTTP 403.' },
+    ],
+  },
+  {
+    layer: 'exception',
+    name: 'IAServiceUnavailableException',
+    type: 'class',
+    pkg: '...util.exception',
+    desc: 'Lanzada cuando Gemini API falla o la respuesta no puede parsearse. Aísla el fallo de IA del core del sistema.',
+    annotations: [],
+  },
+
+  // ── IA / GEMINI ───────────────────────────────────────────────
+  {
+    layer: 'ai',
+    name: 'GeminiClient',
+    type: 'class',
+    pkg: '...util.serviceAI',
+    desc: 'Cliente HTTP para la API de Gemini. Construye y envía requests con prompt + config de temperatura, extrae el texto de la respuesta y aísla errores lanzando IAServiceUnavailableException.',
+    annotations: [
+      { name: '@Component', desc: 'Bean Spring — inyectado en IAService.' },
+      { name: '@Slf4j', desc: 'Logger para errores de comunicación y parseo.' },
+      { name: '@Value("${google.ai.api-key}")', desc: 'API key de Google AI inyectada desde properties.' },
+      { name: '@Value("${google.ai.model}")', desc: 'Modelo Gemini a usar (ej. gemini-1.5-flash).' },
+      { name: '@Value("${google.ai.temperature:0.7}")', desc: 'Temperatura de generación — default 0.7.' },
+    ],
+  },
+];
+
+// ── LAYER METADATA ──────────────────────────────────────────────────
+const LAYER_LABELS = {
+  all:        'Todas las capas',
+  app:        'Aplicación',
+  controller: 'Controllers',
+  service:    'Services',
+  repo:       'Repositories',
+  entity:     'Entidades',
+  enum:       'Enums',
+  'dto-req':  'DTOs · Request',
+  'dto-res':  'DTOs · Response',
+  config:     'Config',
+  security:   'Security',
+  exception:  'Exceptions',
+  ai:         'IA / Gemini',
+};
+
+// ── STATE ──────────────────────────────────────────────────────────
+let activeLayer = 'all';
+let searchQuery = '';
+const openCards = new Set();
+
+// ── RENDER ─────────────────────────────────────────────────────────
+function renderMain() {
+  const main = document.getElementById('main-content');
+  const query = searchQuery.toLowerCase();
+
+  const filtered = DATA.filter(cls => {
+    const matchLayer = activeLayer === 'all' || cls.layer === activeLayer;
+    if (!matchLayer) return false;
+    if (!query) return true;
+    const haystack = (cls.name + cls.desc + (cls.annotations || []).map(a => a.name + a.desc).join(' ')).toLowerCase();
+    return haystack.includes(query);
+  });
+
+  // Update count
+  document.getElementById('visible-count').textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    main.innerHTML = '<div class="grid"><div class="empty">No se encontraron clases que coincidan con la búsqueda.</div></div>';
+    return;
+  }
+
+  // Group by layer
+  const layers = activeLayer === 'all'
+    ? [...new Set(DATA.map(c => c.layer))]
+    : [activeLayer];
+
+  let html = '';
+  for (const layer of layers) {
+    const group = filtered.filter(c => c.layer === layer);
+    if (group.length === 0) continue;
+
+    const color = COLORS[layer] || '#94a3b8';
+    html += `
+      <div class="section-title" data-layer="${layer}">
+        <span class="section-dot" style="background:${color}"></span>
+        ${LAYER_LABELS[layer]}
+        <span style="color:var(--border)">·</span>
+        <span style="color:var(--muted)">${group.length} clase${group.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="grid">
+    `;
+
+    for (const cls of group) {
+      html += renderCard(cls, color);
+    }
+
+    html += '</div>';
+  }
+
+  main.innerHTML = html;
+
+  // Re-attach toggle listeners
+  main.querySelectorAll('.fields-toggle').forEach(toggle => {
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = toggle.dataset.id;
+      const list = document.querySelector(`.fields-list[data-id="${id}"]`);
+      if (!list) return;
+      const isOpen = list.classList.contains('open');
+      if (isOpen) {
+        list.classList.remove('open');
+        toggle.classList.remove('open');
+        openCards.delete(id);
+      } else {
+        list.classList.add('open');
+        toggle.classList.add('open');
+        openCards.add(id);
+      }
+    });
+  });
+
+  // Restore open state
+  openCards.forEach(id => {
+    const list = document.querySelector(`.fields-list[data-id="${id}"]`);
+    const toggle = document.querySelector(`.fields-toggle[data-id="${id}"]`);
+    if (list) { list.classList.add('open'); }
+    if (toggle) { toggle.classList.add('open'); }
+  });
+}
+
+function renderCard(cls, color) {
+  const typeLabel = TYPE_LABELS[cls.type] || cls.type;
+  const annCount = (cls.annotations || []).length;
+  const hasFields = cls.fields && cls.fields.length > 0;
+  const hasValues = cls.values && cls.values.length > 0;
+  const cardId = cls.name;
+
+  let annsHtml = '';
+  if (annCount > 0) {
+    annsHtml = `<div class="annotations-list">` +
+      cls.annotations.map(a => `
+        <div class="ann">
+          <span class="ann-name">${escape(a.name)}</span>
+          <span class="ann-desc">${escape(a.desc)}</span>
+        </div>
+      `).join('') +
+      `</div>`;
+  } else if (hasValues) {
+    annsHtml = `<div class="annotations-list">
+      <div class="ann">
+        <span class="ann-name" style="color:var(--green)">valores</span>
+        <span class="ann-desc">${cls.values.map(v => `<code style="color:var(--green);font-family:monospace">${v}</code>`).join(' · ')}</span>
+      </div>
+    </div>`;
+  } else {
+    annsHtml = `<span style="color:var(--muted);font-size:0.78rem">Sin anotaciones especiales (solo record Java)</span>`;
+  }
+
+  let fieldsHtml = '';
+  if (hasFields) {
+    const rows = cls.fields.map(f => `
+      <div class="field-row">
+        <span class="field-name">${escape(f.name)}</span>
+        <span style="color:var(--muted);font-size:0.7rem">:</span>
+        <span class="field-type">${escape(f.type)}</span>
+      </div>
+    `).join('');
+    fieldsHtml = `
+      <div class="fields-toggle" data-id="${cardId}">
+        <span class="arrow">▶</span>
+        ${cls.fields.length} campos
+      </div>
+      <div class="fields-list" data-id="${cardId}">
+        ${rows}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="card" data-layer="${cls.layer}" data-name="${cls.name}">
+      <div class="card-header" style="background:${color}18;border-bottom:1px solid ${color}30">
+        <span class="card-type-badge" style="background:${color}25;color:${color}">${typeLabel}</span>
+        <span class="card-name">${escape(cls.name)}</span>
+        <span class="card-pkg">${escape(cls.pkg)}</span>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">${escape(cls.desc)}</p>
+        ${annsHtml}
+        ${fieldsHtml}
+      </div>
+    </div>
+  `;
+}
+
+function escape(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── SIDEBAR ─────────────────────────────────────────────────────────
+function updateSidebarCounts() {
+  const query = searchQuery.toLowerCase();
+  const layers = Object.keys(LAYER_LABELS).filter(l => l !== 'all');
+
+  let totalVisible = 0;
+  for (const layer of layers) {
+    const count = DATA.filter(c => {
+      if (c.layer !== layer) return false;
+      if (!query) return true;
+      const h = (c.name + c.desc + (c.annotations || []).map(a => a.name + a.desc).join(' ')).toLowerCase();
+      return h.includes(query);
+    }).length;
+    const el = document.getElementById(`count-${layer}`);
+    if (el) el.textContent = count;
+    totalVisible += count;
+  }
+  const allEl = document.getElementById('count-all');
+  if (allEl) allEl.textContent = totalVisible;
+}
+
+// ── EVENTS ──────────────────────────────────────────────────────────
+document.querySelectorAll('.layer-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeLayer = btn.dataset.layer;
+    renderMain();
+  });
+});
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  updateSidebarCounts();
+  renderMain();
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────
+renderMain();
+</script>
+</body>
+</html>
