@@ -11,7 +11,6 @@ public record ClasificarSolicitudRequest(
         @NotNull(message = "El tipo de solicitud es requerido")
         TipoSolicitud tipo,
 
-        @NotNull(message = "La prioridad es requerida")
         Prioridad prioridad,
 
         @NotBlank(message = "La nota de clasificación es requerida")

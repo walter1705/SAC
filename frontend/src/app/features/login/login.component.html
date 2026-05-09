@@ -1,0 +1,47 @@
+<main class="login-shell">
+  <section class="login-panel">
+    <div class="brand-block">
+      <p class="eyebrow">SAC</p>
+      <h1>Iniciar sesion</h1>
+      <p class="description">
+        Accede con tu cuenta institucional para entrar al dashboard del sistema.
+      </p>
+    </div>
+
+    <form class="login-form" [formGroup]="formulario" (ngSubmit)="iniciarSesion()">
+      <label class="field">
+        <span>Usuario</span>
+        <input
+          type="text"
+          formControlName="nombreUsuario"
+          placeholder="admin"
+          autocomplete="username"
+        />
+        @if (campoInvalido('nombreUsuario')) {
+          <small>Ingresa un usuario valido.</small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Contrasena</span>
+        <input
+          type="password"
+          formControlName="contrasena"
+          placeholder="Tu contrasena"
+          autocomplete="current-password"
+        />
+        @if (campoInvalido('contrasena')) {
+          <small>La contrasena debe tener al menos 8 caracteres.</small>
+        }
+      </label>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <button type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Ingresando...' : 'Entrar al dashboard' }}
+      </button>
+    </form>
+  </section>
+</main>

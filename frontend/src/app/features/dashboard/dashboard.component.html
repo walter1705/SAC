@@ -1,0 +1,17 @@
+<main class="dashboard-shell">
+  <section class="dashboard-card">
+    <p class="eyebrow">Dashboard</p>
+    <h1>Bienvenido, {{ nombreUsuario() }}</h1>
+    <p class="summary">
+      Inicio de sesion correcto. Tu rol actual es <strong>{{ rol() }}</strong>.
+    </p>
+
+    <div class="session-data">
+      <p><span>Usuario</span><strong>{{ nombreUsuario() }}</strong></p>
+      <p><span>Rol</span><strong>{{ rol() }}</strong></p>
+      <p><span>Token</span><strong>JWT almacenado en localStorage</strong></p>
+    </div>
+
+    <button type="button" (click)="cerrarSesion()">Cerrar sesion</button>
+  </section>
+</main>
