@@ -188,7 +188,7 @@ class SolicitudServiceTest {
         @DisplayName("Clasifica solicitud exitosamente")
         void clasificarSolicitud_conEstadoRegistrada_retornaSolicitudClasificada() {
             ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
-                    TipoSolicitud.HOMOLOGACION, Prioridad.ALTA, "Solicitud prioritaria de homologacion"
+                    TipoSolicitud.HOMOLOGACION, null, "Solicitud prioritaria de homologacion"
             );
 
             when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
@@ -201,7 +201,26 @@ class SolicitudServiceTest {
             assertThat(response.tipo()).isEqualTo(TipoSolicitud.HOMOLOGACION);
             assertThat(response.prioridad()).isEqualTo(Prioridad.ALTA);
 
-            verify(historialRepository).save(any(Historial.class));
+            verify(historialRepository).save(argThat(historial ->
+                    historial.getObservaciones().contains("calculada automaticamente")));
+        }
+
+        @Test
+        @DisplayName("Permite ajustar manualmente la prioridad calculada")
+        void clasificarSolicitud_conPrioridadManual_preservaAjusteManual() {
+            ClasificarSolicitudRequest request = new ClasificarSolicitudRequest(
+                    TipoSolicitud.CONSULTA, Prioridad.ALTA, "Se solicita respuesta prioritaria"
+            );
+
+            when(solicitudRepository.findById(1L)).thenReturn(Optional.of(testSolicitud));
+            when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            SolicitudResponse response = solicitudService.clasificarSolicitud(1L, request, "admin");
+
+            assertThat(response.prioridad()).isEqualTo(Prioridad.ALTA);
+
+            verify(historialRepository).save(argThat(historial ->
+                    historial.getObservaciones().contains("ajustada manualmente; sugerida BAJA")));
         }
 
         @Test

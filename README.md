@@ -5,7 +5,7 @@ SAC (Sistema de Atención y Clasificación) is a web-based Academic Request Tria
 The system is built using:
 
 - Backend: Spring Boot (Java)
-- Frontend: Next.js (React)
+- Frontend: Angular 21
 - Database: PostgreSQL (recommended)
 - Authentication: JWT-based security
 - Optional Value-Added Feature: AI-assisted classification and summarization
@@ -49,12 +49,12 @@ Backend (Spring Boot):
 - Repository Layer (JPA/Hibernate)
 - Security Layer (JWT + Role-based Authorization)
 
-Frontend (Next.js):
+Frontend (Angular):
 
-- App Router or Pages Router
-- Modular component architecture
-- API service layer
-- Auth context (JWT management)
+- Standalone components + Angular Router
+- Reactive Forms for authentication flows
+- HTTP service layer with `HttpClient`
+- Route guards for access control
 - Role-based UI rendering
 
 System communication:
@@ -110,12 +110,13 @@ Backend:
 
 Frontend:
 
-- Next.js
-- React
+- Angular 21
 - TypeScript
-- Axios or Fetch API
+- Angular Router
+- Reactive Forms
+- HttpClient
 - JWT authentication
-- Tailwind CSS or CSS Modules
+- CSS
 
 Deployment:
 
@@ -215,16 +216,16 @@ http://localhost:8080
 
 npm install
 
-3. Configure environment file:
+3. Review the API base URL in:
 
-NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+`src/app/core/api.config.ts`
 
 4. Run:
 
-npm run dev
+npm start
 
 Frontend default port:
-http://localhost:3000
+http://localhost:4200
 
 ---
 
@@ -240,7 +241,7 @@ Backend:
 
 Frontend:
 
-- NEXT_PUBLIC_API_URL
+- `src/app/core/api.config.ts` defines the backend base URL
 
 ---
 
@@ -329,7 +330,7 @@ The system is considered complete when:
 # 16. Author
 
 Project: SAC – Academic Request Triage System  
-Technology: Spring Boot + Next.js  
+Technology: Spring Boot + Angular  
 Architecture: Layered REST-based
 
 ---

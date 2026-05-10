@@ -1,0 +1,74 @@
+.dashboard-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #ffffff;
+}
+
+.dashboard-card {
+  width: min(100%, 640px);
+  border: 1px solid #111111;
+  padding: 32px;
+  background: #ffffff;
+  box-shadow: 12px 12px 0 #111111;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+}
+
+.summary {
+  margin: 16px 0 24px;
+  color: #444444;
+}
+
+.session-data {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #111111;
+  background: #f7f7f7;
+}
+
+.session-data p {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+}
+
+.session-data span {
+  color: #555555;
+}
+
+button {
+  border: 1px solid #111111;
+  background: #111111;
+  color: #ffffff;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .dashboard-card {
+    padding: 24px;
+    box-shadow: 8px 8px 0 #111111;
+  }
+
+  .session-data p {
+    flex-direction: column;
+  }
+}

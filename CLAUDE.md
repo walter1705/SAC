@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 SAC (Sistema de Atención y Clasificación) is an academic request triage system for a university program. It centralizes, classifies, prioritizes, and tracks academic/administrative requests through a full lifecycle.
 
-**Stack**: Spring Boot 4 (Java 21) + Next.js 16 (React 19, TypeScript) + PostgreSQL + RabbitMQ
+**Stack**: Spring Boot 4 (Java 21) + Angular 21 + PostgreSQL + RabbitMQ
 
 ---
 
@@ -76,22 +76,22 @@ Available at `http://localhost:8080/swagger-ui.html` when running.
 ### Commands
 
 ```bash
-# Install (uses bun)
-bun install
+# Install
+npm install
 
 # Dev server
-bun run dev        # http://localhost:3000
+npm start          # http://localhost:4200
 
 # Build
-bun run build
+npm run build
 
-# Lint
-bun run lint
+# Test
+npm test
 ```
 
 ### Architecture
 
-Next.js App Router. Currently in early stage — `app/` only has `layout.tsx`, `page.tsx`, and `globals.css`. API base URL configured via `NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1`.
+Angular 21 app with standalone components, Angular Router, Reactive Forms, and `HttpClient`. The current frontend includes a functional login flow and a protected dashboard route. API base URL is configured in `src/app/core/api.config.ts`.
 
 ---
 

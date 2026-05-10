@@ -14,8 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 
 @Service
@@ -96,16 +98,56 @@ public class SolicitudService {
         }
 
         solicitud.setTipo(request.tipo());
-        solicitud.setPrioridad(request.prioridad());
+        Prioridad prioridadAutomatica = calcularPrioridadAutomatica(solicitud, request.tipo(), request.notaClasificacion());
+        Prioridad prioridadFinal = request.prioridad() != null ? request.prioridad() : prioridadAutomatica;
+
+        solicitud.setPrioridad(prioridadFinal);
         solicitud.setNotaClasificacion(request.notaClasificacion());
         solicitud.setEstado(EstadoSolicitud.CLASIFICADA);
 
         Solicitud saved = solicitudRepository.save(solicitud);
 
+        String detallePrioridad = prioridadFinal == prioridadAutomatica
+                ? prioridadFinal.name() + " (calculada automaticamente)"
+                : prioridadFinal.name() + " (ajustada manualmente; sugerida " + prioridadAutomatica.name() + ")";
         registrarHistorial(saved, AccionHistorial.CLASIFICACION, nombreUsuario,
-                "Clasificada como " + request.tipo() + " con prioridad " + request.prioridad());
+                "Clasificada como " + request.tipo() + " con prioridad " + detallePrioridad);
 
         return toResponse(saved);
+    }
+
+    private Prioridad calcularPrioridadAutomatica(Solicitud solicitud, TipoSolicitud tipo, String notaClasificacion) {
+        String contexto = normalizarTexto(solicitud.getAsunto() + " " + solicitud.getDescripcion() + " " + notaClasificacion);
+
+        return switch (tipo) {
+            case HOMOLOGACION -> Prioridad.ALTA;
+            case CONSULTA -> Prioridad.BAJA;
+            case CANCELACION -> contieneAlguna(contexto, "urgente", "fecha limite", "ultimo dia", "vence", "plazo")
+                    ? Prioridad.ALTA
+                    : Prioridad.MEDIA;
+            case REGISTRO -> contieneAlguna(contexto, "matricula", "inscripcion", "inscribir", "cupo", "semestre")
+                    ? Prioridad.ALTA
+                    : Prioridad.MEDIA;
+            case CUPOS -> contieneAlguna(contexto, "sin cupo", "no hay cupo", "cupos agotados", "cupo agotado", "lista de espera")
+                    ? Prioridad.ALTA
+                    : Prioridad.MEDIA;
+        };
+    }
+
+    private String normalizarTexto(String texto) {
+        String textoSeguro = texto == null ? "" : texto;
+        String sinAcentos = Normalizer.normalize(textoSeguro, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return sinAcentos.toLowerCase(Locale.ROOT);
+    }
+
+    private boolean contieneAlguna(String texto, String... terminos) {
+        for (String termino : terminos) {
+            if (texto.contains(termino)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Transactional
